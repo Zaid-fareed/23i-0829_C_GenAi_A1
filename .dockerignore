@@ -1,0 +1,12 @@
+.venv
+data
+checkpoints
+mlruns
+mlflow.db
+frontend/node_modules
+frontend/dist
+onnx_models
+onnx_models_dummy
+reports
+optuna_studies
+**/__pycache__

@@ -1,0 +1,20 @@
+data/
+checkpoints/
+mlruns/
+*.pt
+*.pth
+*.onnx
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.env
+*.db
+kaggle_code.zip
+*.zip
+*.resume
+frontend/dist/
+onnx_models_dummy/
+# keep experiment-tracking evidence (small): Optuna studies + MLflow DB
+!optuna_studies/*.db
+!mlflow.db

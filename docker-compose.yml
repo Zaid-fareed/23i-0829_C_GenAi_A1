@@ -1,0 +1,30 @@
+# One command:  docker compose up --build        ->  app at http://localhost:3000
+# ONNX models are read from ./onnx_models (override: MODELS_DIR=./some/folder docker compose up --build)
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - ${MODELS_DIR:-./onnx_models}:/models:ro
+    environment:
+      - MODEL_DIR=/models
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Experiment-tracking UI (MLflow runs recorded during training). http://localhost:5000
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:////mlflow/mlflow.db --allowed-hosts "*"
+    volumes:
+      - ./mlflow.db:/mlflow/mlflow.db
+    ports:
+      - "5000:5000"
+    profiles: ["tracking"]   # start with: docker compose --profile tracking up

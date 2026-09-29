@@ -1,0 +1,17 @@
+torch
+torchvision
+numpy
+pillow
+opencv-python-headless
+scikit-learn
+pandas
+matplotlib
+seaborn
+tqdm
+pyyaml
+optuna
+mlflow
+pytorch-msssim
+onnx
+onnxruntime
+onnxscript
