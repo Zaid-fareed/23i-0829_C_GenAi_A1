@@ -10,14 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from . import corruptions as C
-from .imaging import decode_upload, error_map, psnr, to_data_url, to_tensor
+from .imaging import decode_upload, error_map, fit_square, psnr, to_data_url, to_tensor
 from .registry import ModelRegistry
 
 CLASSES = ["clean", "salt_pepper", "blur", "occlusion"]
 SPECIALISTS = {"salt_pepper": "specialist_salt_pepper", "blur": "specialist_blur", "occlusion": "specialist_occlusion"}
 SAMPLES_DIR = Path(os.environ.get("SAMPLES_DIR", Path(__file__).resolve().parents[1] / "samples"))
 
-app = FastAPI(title="GenAI Assignment 1 - Restoration & Face-to-Sketch API", version="1.0")
+app = FastAPI(title="GenAI Assignment 1 - Restoration & Face-to-Sketch API", version="1.0",
+              docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)  # under /api so nginx proxies it
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 registry = ModelRegistry()
 
@@ -184,14 +185,16 @@ async def restore_soft(file: UploadFile | None = File(None), sample: str | None 
 
 @app.post("/api/sketch")
 async def face_to_sketch(file: UploadFile | None = File(None), sample: str | None = Form(None),
-                         style: int = Form(1)):
+                         style: int = Form(1), fit: str = Form("crop")):
     registry.require("sketch")
     if style not in (1, 2, 3):
         raise HTTPException(422, "style must be 1, 2 or 3.")
+    if fit not in ("crop", "pad", "stretch"):
+        raise HTTPException(422, "fit must be crop, pad or stretch.")
     im, name = await load_input(file, sample)
-    photo = to_tensor(im)
+    photo = to_tensor(fit_square(im, fit))
     feeds = {"photo": (photo * 2 - 1)[None].astype(np.float32), "style": np.array([style - 1], dtype=np.int64)}
     (o,), ms = registry.run("sketch", feeds)
     sketch = (np.clip(o[0, 0], -1, 1) + 1) / 2
-    return {"filename": name, "style": f"Style {style}", "input_image": to_data_url(photo),
+    return {"filename": name, "style": f"Style {style}", "fit": fit, "input_image": to_data_url(photo),
             "output_image": to_data_url(sketch), "inference_ms": round(ms, 2)}

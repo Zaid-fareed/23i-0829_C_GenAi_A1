@@ -80,6 +80,13 @@ def test_sketch(style):
     assert j["style"] == f"Style {style}" and j["output_image"].startswith("data:image/png")
 
 
+@pytest.mark.parametrize("fit", ["crop", "pad", "stretch"])
+def test_sketch_fit_modes_on_non_square_photo(fit):
+    r = client.post("/api/sketch", files=files(png((60, 120))), data={"style": 2, "fit": fit})
+    assert r.status_code == 200 and r.json()["fit"] == fit
+    assert client.post("/api/sketch", files=files(), data={"style": 1, "fit": "zoom"}).status_code == 422
+
+
 def test_bad_inputs():
     assert client.post("/api/sketch", files=files(), data={"style": 4}).status_code == 422
     assert client.post("/api/sketch", files=files(b"not an image", "image/png")).status_code == 400
