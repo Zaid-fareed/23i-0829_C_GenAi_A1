@@ -80,9 +80,10 @@ def sample_grid(G, fixed_x, device, path):
 
 
 def fit_gan(p, epochs, device, max_train=None, trial=None, ckpt_path=None, workers=None, sample_every=0,
-            log_prefix="", resume=False):
+            log_prefix="", resume=False, photometric=False, lr_decay=False, tag=""):
     """Returns (best_val_obj, history). Best checkpoint = lowest val obj (generator + params saved)."""
-    train_loader = build_loader("train", p["batch_size"], max_items=max_train, workers=workers)
+    train_loader = build_loader("train", p["batch_size"], max_items=max_train, workers=workers,
+                                photometric=photometric)
     val_loader = build_loader("val", 32, workers=workers)
     fixed_x = next(iter(build_loader("val", 8, shuffle=False, workers=0)))[0]
     G, D = build_gan(p)
@@ -93,6 +94,11 @@ def fit_gan(p, epochs, device, max_train=None, trial=None, ckpt_path=None, worke
     best, best_state, history = math.inf, None, []
     rpath = R.default_path(ckpt_path)
     objs = {"G": G, "D": D, "oG": oG, "oD": oD}
+    if lr_decay:  # pix2pix schedule: constant lr for the first half, then linear decay to 0
+        half = epochs // 2
+        f = lambda e: 1.0 if e < half else max(0.0, (epochs - e) / max(1, epochs - half))  # noqa: E731
+        sG, sD = (torch.optim.lr_scheduler.LambdaLR(o, f) for o in (oG, oD))
+        objs.update(sG=sG, sD=sD)
     start = 0
     if resume and (r := R.load(rpath, objs=objs, device=device)):
         start, best, best_state, history = r
@@ -118,6 +124,8 @@ def fit_gan(p, epochs, device, max_train=None, trial=None, ckpt_path=None, worke
             n += b
             for k, v in (("d_real", d_real), ("d_fake", d_fake), ("g_adv", g_adv), ("g_l1", g_l1)):
                 acc[k] += v.item() * b
+        if lr_decay:
+            sG.step(); sD.step()
         val = evaluate(G, val_loader, device)
         rec = {"epoch": epoch, **{k: v / n for k, v in acc.items()}, **{f"val_{k}": v for k, v in val.items()}}
         history.append(rec)
@@ -127,7 +135,7 @@ def fit_gan(p, epochs, device, max_train=None, trial=None, ckpt_path=None, worke
         if mlflow.active_run():
             mlflow.log_metrics({k: v for k, v in rec.items() if k != "epoch"}, step=epoch)
             if sample_every and ((epoch + 1) % sample_every == 0 or epoch == 0):
-                out = paths.REPO_ROOT / "reports" / "task4"
+                out = paths.REPO_ROOT / "reports" / f"task4{tag}"
                 out.mkdir(parents=True, exist_ok=True)
                 fp = out / f"samples_ep{epoch + 1:03d}.png"
                 sample_grid(G, fixed_x, device, fp)
@@ -145,6 +153,10 @@ def fit_gan(p, epochs, device, max_train=None, trial=None, ckpt_path=None, worke
     return best, history
 
 
+def sfx(args):
+    return f"_{args.tag}" if args.tag else ""
+
+
 def objective(trial, args, device):
     p = suggest(trial)
     mlflow.start_run(run_name=f"trial_{trial.number}", nested=True)
@@ -152,7 +164,8 @@ def objective(trial, args, device):
     try:
         mlflow.log_params(p)
         best, _ = fit_gan(p, args.epochs, device, args.max_train, trial=trial, workers=args.workers,
-                          log_prefix=f"[t{trial.number}] ")
+                          log_prefix=f"[t{trial.number}] ", photometric=args.photometric,
+                          lr_decay=args.lr_decay)
         mlflow.log_metric("best_val_obj", best)
         return best
     except optuna.TrialPruned:
@@ -171,21 +184,23 @@ def cmd_optuna(args):
     setup_mlflow(EXPERIMENT)
     (paths.REPO_ROOT / "optuna_studies").mkdir(exist_ok=True)
     study = optuna.create_study(
-        study_name="task4_cgan", storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / 'task4.db'}",
+        study_name=f"task4_cgan{sfx(args)}",
+        storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / f'task4{sfx(args)}.db'}",
         direction="minimize", sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(n_startup_trials=3, n_warmup_steps=3), load_if_exists=True)
-    with mlflow.start_run(run_name="optuna_study_task4"):
-        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train})
+    with mlflow.start_run(run_name=f"optuna_study_task4{sfx(args)}"):
+        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train,
+                           "photometric": args.photometric, "lr_decay": args.lr_decay})
         study.optimize(lambda t: objective(t, args, device), n_trials=remaining_trials(study, args.n_trials))
         mlflow.log_metric("best_value", study.best_value)
         mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
     (paths.REPO_ROOT / "configs").mkdir(exist_ok=True)
-    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / "task4_best.json", "w"), indent=2)
-    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / "task4_trials.csv", index=False)
+    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / f"task4_best{sfx(args)}.json", "w"), indent=2)
+    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / f"task4{sfx(args)}_trials.csv", index=False)
     try:
         from optuna.visualization.matplotlib import plot_optimization_history, plot_param_importances
         for fn, name in ((plot_optimization_history, "history"), (plot_param_importances, "importance")):
-            fn(study).figure.savefig(paths.REPO_ROOT / "optuna_studies" / f"task4_{name}.png", dpi=120,
+            fn(study).figure.savefig(paths.REPO_ROOT / "optuna_studies" / f"task4{sfx(args)}_{name}.png", dpi=120,
                                      bbox_inches="tight")
     except Exception as e:
         print("optuna plots skipped:", e)
@@ -195,16 +210,18 @@ def cmd_optuna(args):
 def cmd_final(args):
     device = get_device()
     setup_mlflow(EXPERIMENT)
-    p = json.load(open(args.params or paths.REPO_ROOT / "configs" / "task4_best.json"))
+    p = json.load(open(args.params or paths.REPO_ROOT / "configs" / f"task4_best{sfx(args)}.json"))
     seed_everything(42)
-    ckpt = paths.checkpoint_dir() / "task4_generator.pt"
-    with mlflow.start_run(run_name="final_task4"):
-        mlflow.log_params({**p, "epochs": args.epochs, "max_train": args.max_train})
+    ckpt = paths.checkpoint_dir() / f"task4_generator{sfx(args)}.pt"
+    with mlflow.start_run(run_name=f"final_task4{sfx(args)}"):
+        mlflow.log_params({**p, "epochs": args.epochs, "max_train": args.max_train,
+                           "photometric": args.photometric, "lr_decay": args.lr_decay})
         best, hist = fit_gan(p, args.epochs, device, args.max_train, ckpt_path=ckpt, workers=args.workers,
-                             sample_every=args.sample_every, resume=args.resume)
+                             sample_every=args.sample_every, resume=args.resume,
+                             photometric=args.photometric, lr_decay=args.lr_decay, tag=sfx(args))
         mlflow.log_metric("best_val_obj", best)
         mlflow.log_artifact(str(ckpt))
-    json.dump(hist, open(paths.checkpoint_dir() / "task4_history.json", "w"))
+    json.dump(hist, open(paths.checkpoint_dir() / f"task4_history{sfx(args)}.json", "w"))
     print("saved", ckpt, "best val obj", best)
 
 
@@ -218,6 +235,9 @@ if __name__ == "__main__":
     ap.add_argument("--sample_every", type=int, default=10)
     ap.add_argument("--params", default=None)
     ap.add_argument("--resume", action="store_true", help="continue from checkpoints/*.resume")
+    ap.add_argument("--tag", default="", help="suffix for study/config/checkpoint names, e.g. v2 (keeps v1 untouched)")
+    ap.add_argument("--photometric", action="store_true", help="brightness/contrast jitter on the photo only")
+    ap.add_argument("--lr_decay", action="store_true", help="linear lr decay over the second half of training")
     a = ap.parse_args()
     seed_everything(42)
     cmd_optuna(a) if a.mode == "optuna" else cmd_final(a)
