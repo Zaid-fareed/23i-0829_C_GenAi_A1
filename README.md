@@ -14,7 +14,7 @@ KAGGLE_GUIDE.md training instructions   |   STITCH_PROMPT.md UI design prompt
 ## 1. Run the application (evaluator quick start)
 Requires Docker Desktop.
 ```bash
-git clone <REPO_URL> && cd genai-assignment1
+git clone https://github.com/Zaid-fareed/23i-0829_C_GenAi_A1.git && cd 23i-0829_C_GenAi_A1
 # download the trained ONNX models (link: <MODELS_DOWNLOAD_URL>) into ./onnx_models :
 #   task1_universal_dae.onnx  task2_classifier.onnx  task2_specialist_{salt_pepper,blur,occlusion}.onnx
 #   task3_soft_moe.onnx       task4_generator.onnx
