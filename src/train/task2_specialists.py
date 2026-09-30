@@ -31,14 +31,18 @@ EXPERIMENT = "task2_specialists"
 CORRUPT_TYPES = [t for t in TYPES if t != "clean"]  # salt_pepper, blur, occlusion
 
 
-def suggest(trial: optuna.Trial) -> dict:
+def sfx(args):
+    return f"_{args.tag}" if args.tag else ""
+
+
+def suggest(trial: optuna.Trial, alpha_min: float = 0.2) -> dict:
     return {
         "lr": trial.suggest_float("lr", 3e-4, 3e-3, log=True),
         "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
         "bottleneck_dim": trial.suggest_categorical("bottleneck_dim", [32, 64, 128, 256]),
         "channels": trial.suggest_categorical("channels", list(CHANNEL_OPTIONS)),
         "dropout": trial.suggest_float("dropout", 0.0, 0.15),
-        "alpha": trial.suggest_float("alpha", 0.2, 0.95),
+        "alpha": trial.suggest_float("alpha", alpha_min, 0.95),
     }
 
 
@@ -54,7 +58,7 @@ def train_one_specialist(ctype, params, epochs, max_train, device, ckpt_path=Non
 
 
 def objective(trial, args, device):
-    params = suggest(trial)
+    params = suggest(trial, args.alpha_min)
     mlflow.start_run(run_name=f"trial_{trial.number}", nested=True)
     try:
         mlflow.log_params(params)
@@ -76,35 +80,36 @@ def cmd_optuna(args):
     setup_mlflow(EXPERIMENT)
     (paths.REPO_ROOT / "optuna_studies").mkdir(exist_ok=True)
     study = optuna.create_study(
-        study_name="task2_specialists_shared_arch",
-        storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / 'task2_specialists.db'}",
+        study_name=f"task2_specialists_shared_arch{sfx(args)}",
+        storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / f'task2_specialists{sfx(args)}.db'}",
         direction="minimize", sampler=optuna.samplers.TPESampler(seed=42), pruner=optuna.pruners.NopPruner(),
         load_if_exists=True)
-    with mlflow.start_run(run_name="optuna_study_task2_specialists"):
-        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train})
+    with mlflow.start_run(run_name=f"optuna_study_task2_specialists{sfx(args)}"):
+        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train,
+                           "alpha_min": args.alpha_min})
         study.optimize(lambda t: objective(t, args, device), n_trials=remaining_trials(study, args.n_trials))
         mlflow.log_metric("best_value", study.best_value)
         mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
     (paths.REPO_ROOT / "configs").mkdir(exist_ok=True)
-    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / "task2_specialists_best.json", "w"), indent=2)
-    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / "task2_specialists_trials.csv", index=False)
+    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / f"task2_specialists_best{sfx(args)}.json", "w"), indent=2)
+    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / f"task2_specialists{sfx(args)}_trials.csv", index=False)
     print("BEST (mean val obj across 3 specialists)", study.best_value, study.best_params)
 
 
 def cmd_final(args):
     device = get_device()
     setup_mlflow(EXPERIMENT)
-    params = json.load(open(args.params or paths.REPO_ROOT / "configs" / "task2_specialists_best.json"))
+    params = json.load(open(args.params or paths.REPO_ROOT / "configs" / f"task2_specialists_best{sfx(args)}.json"))
     seed_everything(42)
     for ctype in CORRUPT_TYPES:
-        ckpt = paths.checkpoint_dir() / f"task2_specialist_{ctype}.pt"
-        with mlflow.start_run(run_name=f"final_specialist_{ctype}"):
+        ckpt = paths.checkpoint_dir() / f"task2_specialist_{ctype}{sfx(args)}.pt"
+        with mlflow.start_run(run_name=f"final_specialist_{ctype}{sfx(args)}"):
             mlflow.log_params({**params, "epochs": args.epochs, "corruption_type": ctype, "max_train": args.max_train})
             best, hist = train_one_specialist(ctype, params, args.epochs, args.max_train, device, ckpt_path=ckpt,
                                               workers=args.workers, prefix=f"[{ctype}] ", resume=args.resume)
             mlflow.log_metric("best_val_obj", best)
             mlflow.log_artifact(str(ckpt))
-        json.dump(hist, open(paths.checkpoint_dir() / f"task2_specialist_{ctype}_history.json", "w"))
+        json.dump(hist, open(paths.checkpoint_dir() / f"task2_specialist_{ctype}{sfx(args)}_history.json", "w"))
         print("saved", ckpt, "best val obj", best)
 
 
@@ -117,6 +122,8 @@ if __name__ == "__main__":
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--params", default=None)
     ap.add_argument("--resume", action="store_true", help="continue from checkpoints/*.resume")
+    ap.add_argument("--tag", default="", help="suffix for study/config/checkpoint names, e.g. v2 (keeps the original files untouched)")
+    ap.add_argument("--alpha_min", type=float, default=0.2, help="lower bound of the searched L1 weight alpha (default 0.2 = original search)")
     a = ap.parse_args()
     seed_everything(42)
     cmd_optuna(a) if a.mode == "optuna" else cmd_final(a)

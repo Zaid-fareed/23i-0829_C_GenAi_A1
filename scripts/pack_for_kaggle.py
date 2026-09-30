@@ -6,7 +6,8 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ITEMS = ["src", "scripts", "tests", "configs", "requirements.txt"]
+ITEMS = ["src", "scripts", "tests", "configs", "requirements.txt",
+         "manifests", "checkpoints/task2_classifier.pt"]  # identical split/manifests + the trained Task 2 classifier (1 MB)
 
 with zipfile.ZipFile(ROOT / "kaggle_code.zip", "w", zipfile.ZIP_DEFLATED) as z:
     for item in ITEMS:

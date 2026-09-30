@@ -1,0 +1,87 @@
+{
+  "overall_mean_weight": {
+    "w_clean": 0.2521355908775388,
+    "w_salt_pepper": 0.23409085603072388,
+    "w_blur": 0.25739105259026623,
+    "w_occlusion": 0.2563825004545499
+  },
+  "home_condition_weight": {
+    "salt_pepper": 0.8566266167787165,
+    "blur": 0.8459199258574733,
+    "occlusion": 0.9105364150444015
+  },
+  "dead_branches": [],
+  "always_dominant_branches": [],
+  "condition_table": [
+    {
+      "condition": "clean/none",
+      "w_clean": 0.8062790075483405,
+      "w_salt_pepper": 0.02998709658664004,
+      "w_blur": 0.10105408946242922,
+      "w_occlusion": 0.06267980516387033
+    },
+    {
+      "condition": "salt_pepper/low",
+      "w_clean": 0.05047997698382614,
+      "w_salt_pepper": 0.8418786603640886,
+      "w_blur": 0.07459844860668276,
+      "w_occlusion": 0.03304291758808046
+    },
+    {
+      "condition": "salt_pepper/medium",
+      "w_clean": 0.041535262030616305,
+      "w_salt_pepper": 0.862838131150389,
+      "w_blur": 0.06888010016843385,
+      "w_occlusion": 0.026746505999243726
+    },
+    {
+      "condition": "salt_pepper/high",
+      "w_clean": 0.04171780289875136,
+      "w_salt_pepper": 0.8651630588216719,
+      "w_blur": 0.0667108078456782,
+      "w_occlusion": 0.026408330960430545
+    },
+    {
+      "condition": "blur/low",
+      "w_clean": 0.14743816075858726,
+      "w_salt_pepper": 0.017412272805433258,
+      "w_blur": 0.8076272519195781,
+      "w_occlusion": 0.027522314309440795
+    },
+    {
+      "condition": "blur/medium",
+      "w_clean": 0.09603031661385804,
+      "w_salt_pepper": 0.013815212800027498,
+      "w_blur": 0.8657692390329698,
+      "w_occlusion": 0.024385233458399384
+    },
+    {
+      "condition": "blur/high",
+      "w_clean": 0.09625112447960704,
+      "w_salt_pepper": 0.01413627376390341,
+      "w_blur": 0.864363286619872,
+      "w_occlusion": 0.02524931618663805
+    },
+    {
+      "condition": "occlusion/low",
+      "w_clean": 0.117607382253446,
+      "w_salt_pepper": 0.06482886387737559,
+      "w_blur": 0.028869913585606168,
+      "w_occlusion": 0.7886938445147921
+    },
+    {
+      "condition": "occlusion/medium",
+      "w_clean": 0.009942774272343233,
+      "w_salt_pepper": 0.0269920256988863,
+      "w_blur": 0.004387958738796621,
+      "w_occlusion": 0.9586772379327992
+    },
+    {
+      "condition": "occlusion/high",
+      "w_clean": 0.0037444172714172466,
+      "w_salt_pepper": 0.010102558096863147,
+      "w_blur": 0.001914858049542079,
+      "w_occlusion": 0.9842381626856131
+    }
+  ]
+}

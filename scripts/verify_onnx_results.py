@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ap = argparse.ArgumentParser()
 ap.add_argument("--images", default=str(ROOT / "data/oxford-iiit-pet/images"))
 ap.add_argument("--n", type=int, default=0, help="use only the first N test entries (0 = all)")
+ap.add_argument("--t3_reports", default="reports/task3", help="folder with the Kaggle Task 3 per_image_metrics.csv to compare against")
+ap.add_argument("--routing_reports", default="reports/task2_routing", help="folder with the Kaggle routing_summary.json to compare against")
 a = ap.parse_args()
 
 entries = json.load(open(ROOT / "manifests/test_manifest.json"))["entries"]
@@ -66,7 +68,7 @@ print(f"\n=== independent re-measurement on {n} TEST entries (ONNX + numpy corru
 print(f"classifier accuracy: {(df.label == df.pred).mean():.4f}   (Kaggle report: 0.9910)")
 print("\n                       SSIM(remeasured)  SSIM(Kaggle report)")
 rep1 = pd.read_csv(ROOT / "reports/task1/per_image_metrics.csv")
-rep3 = pd.read_csv(ROOT / "reports/task3/per_image_metrics.csv")
+rep3 = pd.read_csv(ROOT / a.t3_reports / "per_image_metrics.csv")
 if n == len(rep1):
     print(f"Task1 universal AE   :   {df.t1_ssim.mean():.4f}            {rep1.ssim.mean():.4f}")
     print(f"Task3 soft MoE       :   {df.soft_ssim.mean():.4f}            {rep3.ssim.mean():.4f}")
@@ -74,7 +76,7 @@ else:
     idx = rep1.iloc[:n]
     print(f"Task1 universal AE   :   {df.t1_ssim.mean():.4f}            {idx.ssim.mean():.4f}   (same first {n} entries)")
     print(f"Task3 soft MoE       :   {df.soft_ssim.mean():.4f}            {rep3.iloc[:n].ssim.mean():.4f}")
-rs = json.load(open(ROOT / "reports/task2_routing/routing_summary.json"))["predicted"]["overall"]["ssim"]
+rs = json.load(open(ROOT / a.routing_reports / "routing_summary.json"))["predicted"]["overall"]["ssim"]
 print(f"Task2 hard (predicted):  {df.hard_ssim.mean():.4f}            {rs:.4f}" + ("" if n == len(rep1) else "  (Kaggle = full set)"))
 print(f"do-nothing baseline  :   {df.input_ssim.mean():.4f}")
 print("\nper-type SSIM (remeasured): input -> universal / hard / soft")

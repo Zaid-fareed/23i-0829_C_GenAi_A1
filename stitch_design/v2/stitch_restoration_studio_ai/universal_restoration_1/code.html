@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"outline":"#777587","on-primary-fixed":"#0f0069","on-tertiary-container":"#93e8ff","on-primary-container":"#dad7ff","inverse-surface":"#283044","primary":"#3525cd","tertiary-fixed-dim":"#4cd7f6","on-error":"#ffffff","on-secondary":"#ffffff","primary-fixed-dim":"#c3c0ff","on-error-container":"#93000a","surface-container-low":"#f2f3ff","on-secondary-fixed-variant":"#2f2ebe","on-background":"#131b2e","tertiary-container":"#006a7c","surface":"#faf8ff","secondary-fixed":"#e1e0ff","surface-container-lowest":"#ffffff","surface-container":"#eaedff","on-secondary-container":"#fffbff","outline-variant":"#c7c4d8","background":"#faf8ff","on-tertiary-fixed-variant":"#004e5c","error-container":"#ffdad6","on-primary-fixed-variant":"#3323cc","surface-container-high":"#e2e7ff","surface-bright":"#faf8ff","on-surface":"#131b2e","tertiary":"#00505f","surface-dim":"#d2d9f4","primary-fixed":"#e2dfff","on-surface-variant":"#464555","inverse-on-surface":"#eef0ff","surface-container-highest":"#dae2fd","secondary":"#4648d4","tertiary-fixed":"#acedff","on-secondary-fixed":"#07006c","surface-tint":"#4d44e3","error":"#ba1a1a","primary-container":"#4f46e5","secondary-fixed-dim":"#c0c1ff","on-tertiary":"#ffffff","surface-variant":"#dae2fd","on-tertiary-fixed":"#001f26","on-primary":"#ffffff","inverse-primary":"#c3c0ff","secondary-container":"#6063ee"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter-sm":"1rem","margin":"2rem","space-lg":"1.5rem","space-md":"1rem","space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2rem","margin-sm":"1rem","gutter":"1.5rem"},"fontFamily":{"label-code-md":["JetBrains Mono"],"headline-xl-mobile":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"],"label-code-sm":["JetBrains Mono"],"body-md":["Inter"],"label-code-lg":["JetBrains Mono"],"headline-xl":["Inter"]},"fontSize":{"label-code-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"headline-xl-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-md":["18px",{"lineHeight":"26px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-code-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.05em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-code-lg":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-xl":["36px",{"lineHeight":"44px","letterSpacing":"-0.025em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between hidden md:flex"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #4f46e5
+- Font: inter
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WREQuHtfUhEJb6fwR3mqTYWh0foPLGBO84Hj8QFankQLdFr3R-Vaf0ugFI_1Y706whhswOvkgtf5rfKOdSVGjWuQFdMLygDO6cmlNkFlmo0d7pRPFx2i396qdcPdgnWjM0h5U9ukwt-qConAa8A3BISHW7ZOmkrFEtn46jQbPk_3iuqjJcTLIjCIo4FaC79HW4-ZKeKZZdm_ivORU9Mj-JMXsevPtxb1GMsbXdYLyvBbIGuKYbZwVHYVw"/><div class="flex flex-col"><span class="font-headline-md text-headline-md tracking-tight text-on-surface">Restoration Studio</span><span class="font-label-code-sm text-label-code-sm text-outline uppercase tracking-wider">Vision ML Lab</span></div></div><div class="px-space-md pt-space-md pb-space-xs"><span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Workspaces</span></div><nav class="px-space-sm space-y-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold"><a aria-current="page" class="group flex items-center justify-between p-space-sm rounded-xl transition-all bg-surface-container-high text-on-surface font-semibold" data-path="universal-restoration" href="#"><div class="flex flex-col min-w-0 pr-space-xs"><span class="font-body-md text-body-md font-medium truncate">Universal Restoration</span><span class="font-body-sm text-body-sm text-outline truncate">Single-model baseline</span></div><div class="flex items-center gap-1.5 shrink-0 bg-surface-container px-space-xs py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Ready</span></div></a><a class="group flex items-center justify-between p-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="hard-routed-restoration" href="#"><div class="flex flex-col min-w-0 pr-space-xs"><span class="font-body-md text-body-md font-medium truncate">Hard-Routed Restoration</span><span class="font-body-sm text-body-sm text-outline truncate">Classifier gated routing</span></div><div class="flex items-center gap-1.5 shrink-0 bg-surface-container px-space-xs py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Ready</span></div></a><a class="group flex items-center justify-between p-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="soft-mixture-of-experts" href="#"><div class="flex flex-col min-w-0 pr-space-xs"><span class="font-body-md text-body-md font-medium truncate">Soft Mixture-of-Experts</span><span class="font-body-sm text-body-sm text-outline truncate">Dynamic expert blending</span></div><div class="flex items-center gap-1.5 shrink-0 bg-surface-container px-space-xs py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Ready</span></div></a><a class="group flex items-center justify-between p-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="face-to-sketch-generator" href="#"><div class="flex flex-col min-w-0 pr-space-xs"><span class="font-body-md text-body-md font-medium truncate">Face-to-Sketch Generator</span><span class="font-body-sm text-body-sm text-outline truncate">cGAN paired synthesis</span></div><div class="flex items-center gap-1.5 shrink-0 bg-amber-50 px-space-xs py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span class="font-label-code-sm text-label-code-sm text-amber-700">Warmup</span></div></a></nav></div><div class="p-space-sm m-space-sm bg-surface-container-low rounded-xl shadow-[0_1px_3px_rgba(15,23,42,0.04)]"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Engine Core</span><span class="flex items-center gap-1 font-label-code-sm text-label-code-sm text-emerald-600 font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>WS Live</span></div><div class="space-y-1 font-label-code-sm text-label-code-sm text-on-surface-variant"><div class="flex justify-between items-center"><span class="text-outline">Runtime</span><span class="text-on-surface font-medium">PyTorch 2.3 · 12.1</span></div><div class="flex justify-between items-center"><span class="text-outline">Device</span><span class="text-on-surface font-medium truncate max-w-[120px]" title="NVIDIA RTX 4090 (24GB)">RTX 4090 24GB</span></div><div class="flex justify-between items-center"><span class="text-outline">Checkpoints</span><span class="text-primary font-semibold">6/7 Active</span></div></div></div></aside><div class="md:pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-0 right-0 md:left-72 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 flex items-center justify-between px-space-md"><div class="flex items-center gap-space-sm"><div class="flex md:hidden items-center gap-space-xs mr-space-xs"><img alt="Brand logo. - Primary color: #4f46e5
+- Font: inter
+- Mode: light
+- Roundness: rounded-md
+" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WREQuHtfUhEJb6fwR3mqTYWh0foPLGBO84Hj8QFankQLdFr3R-Vaf0ugFI_1Y706whhswOvkgtf5rfKOdSVGjWuQFdMLygDO6cmlNkFlmo0d7pRPFx2i396qdcPdgnWjM0h5U9ukwt-qConAa8A3BISHW7ZOmkrFEtn46jQbPk_3iuqjJcTLIjCIo4FaC79HW4-ZKeKZZdm_ivORU9Mj-JMXsevPtxb1GMsbXdYLyvBbIGuKYbZwVHYVw"/><span class="font-headline-md text-headline-md text-on-surface">Studio</span></div><nav class="hidden sm:flex items-center gap-space-xs font-label-code-md text-label-code-md text-outline"><span class="text-on-surface-variant">restoration-lab</span><span class="material-symbols-outlined text-[14px]">chevron_right</span><span class="text-primary font-medium">models</span><span class="material-symbols-outlined text-[14px]">chevron_right</span><span class="text-on-surface font-semibold">active-session</span></nav></div><div class="flex items-center gap-space-sm"><button class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">code_blocks</span><span class="font-label-code-md text-label-code-md hidden sm:inline">API / Docs</span></button><button class="p-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Theme indicator: Light Active" type="button"><span class="material-symbols-outlined text-[18px]">light_mode</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-surface flex-1 px-space-md lg:px-space-xl py-space-lg"><div class="flex flex-col w-full">
+<div class="flex flex-col lg:flex-row gap-space-lg items-start w-full">
+<!-- LEFT COLUMN: Parameter Rail (fixed ~360px on desktop) -->
+<div class="w-full lg:w-[360px] flex-shrink-0 flex flex-col gap-space-md">
+<!-- Card 1: Input image -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-surface-container text-primary font-semibold">01</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Input Image</h2>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">RAW TENSOR</span>
+</div>
+<!-- Segmented Tab Selector -->
+<div class="grid grid-cols-3 gap-1 bg-surface-container-low p-1 rounded-xl">
+<button class="py-1 px-2 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface text-center transition-colors" type="button">
+            Upload
+          </button>
+<button class="py-1 px-2 rounded-lg font-body-sm text-body-sm font-semibold bg-surface-container-lowest text-primary shadow-sm text-center" type="button">
+            Sample
+          </button>
+<button class="py-1 px-2 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface text-center transition-colors" type="button">
+            Webcam
+          </button>
+</div>
+<!-- Drop/Preview Area with subtle pattern -->
+<div class="relative rounded-xl overflow-hidden bg-surface-container group">
+<div class="relative w-full aspect-square bg-surface-container-high overflow-hidden flex items-center justify-center">
+<img class="w-full h-full object-cover filter blur-[2px] contrast-95 scale-105 transition-transform duration-300 group-hover:scale-100" data-alt="Close-up studio portrait of a woman with soft lighting and natural skin texture, heavily degraded by high-radius Gaussian blur and minor sensor chromatic noise, muted cool cyan and slate shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHLn3pkb0_mVo8W6FCKrO9XbzPgooxWmllg-5BI4VgDoEVf_lBrFg8I8HIBkipM-w2fmfi6sWidiyMeOra50nmGbjLQ9jqZLiJB0amRyLdxY2CeSEWJTR8v5rQgJfvMGaB1ybzsnegqFog3nkpS2Sdl-0mTKnxI0iesjtZziMXPdaYmwewFi2PnRKNgDJ1TIIjibkmDkOKKvF1G-EJ-TtKqCDSpatgaptXZxJk5JDXKbs8hqCRiR3i"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex flex-col justify-end p-space-sm pointer-events-none">
+<div class="flex items-center justify-between w-full">
+<span class="inline-flex items-center gap-1 font-label-code-sm text-label-code-sm bg-inverse-surface/90 text-inverse-on-surface px-2 py-0.5 rounded-full backdrop-blur-sm shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+                  512×512 PNG · 384 KB
+                </span>
+<span class="font-label-code-sm text-label-code-sm text-primary-fixed-dim">RGB uint8</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Actions -->
+<div class="flex items-center justify-between pt-space-xs">
+<button class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm font-medium" type="button">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span>
+            Change Sample
+          </button>
+<button class="flex items-center gap-1 px-space-sm py-1.5 rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors font-body-sm text-body-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">delete_outline</span>
+            Reset
+          </button>
+</div>
+</section>
+<!-- Card 2: Runtime corruption -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-surface-container text-primary font-semibold">02</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Runtime Corruption</h2>
+</div>
+<span class="inline-flex items-center gap-1 font-label-code-sm text-label-code-sm text-tertiary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            Operator Live
+          </span>
+</div>
+<!-- Dropdown Selector -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Corruption Pipeline</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-low text-on-surface font-body-md text-body-md py-2 px-space-sm pr-8 rounded-xl focus:outline-none focus:bg-surface-container-lowest focus:shadow-md cursor-pointer transition-all">
+<option selected="" value="gaussian_blur">Gaussian Blur (2D Convolution)</option>
+<option value="motion_blur">Linear Motion Defocus</option>
+<option value="poisson_noise">Shot &amp; Poisson Noise</option>
+<option value="jpeg_compression">Lossy DCT Compression (Q=12)</option>
+<option value="mixed_blind">Real-world Mixed Degradation</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline text-[18px]">
+              expand_more
+            </span>
+</div>
+</div>
+<!-- Severity Segmented Buttons -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Degradation Scale</label>
+<span class="font-label-code-sm text-label-code-sm text-primary font-medium">Tier II</span>
+</div>
+<div class="grid grid-cols-4 gap-1 bg-surface-container-low p-1 rounded-xl">
+<button class="py-1 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface text-center transition-colors" type="button">
+              Low
+            </button>
+<button class="py-1 rounded-lg font-body-sm text-body-sm font-semibold bg-surface-container-lowest text-primary shadow-sm text-center" type="button">
+              Medium
+            </button>
+<button class="py-1 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface text-center transition-colors" type="button">
+              High
+            </button>
+<button class="py-1 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface text-center transition-colors" type="button">
+              Custom
+            </button>
+</div>
+</div>
+<!-- Sliders -->
+<div class="space-y-space-sm pt-space-xs">
+<!-- Slider 1 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Kernel Radius (σ)</span>
+<span class="font-label-code-sm text-label-code-sm font-semibold text-primary bg-primary-fixed/50 px-1.5 py-0.5 rounded">2.4 px</span>
+</div>
+<div class="relative w-full flex items-center">
+<input class="w-full accent-primary h-1.5 bg-surface-container-high rounded-lg cursor-pointer appearance-none" max="8.0" min="0.5" step="0.1" type="range" value="2.4"/>
+</div>
+<div class="flex justify-between text-outline font-label-code-sm text-[10px]">
+<span>0.5 px</span>
+<span>Kernel 11×11</span>
+<span>8.0 px</span>
+</div>
+</div>
+<!-- Slider 2 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Noise Blend Ratio</span>
+<span class="font-label-code-sm text-label-code-sm font-semibold text-primary bg-primary-fixed/50 px-1.5 py-0.5 rounded">15 %</span>
+</div>
+<div class="relative w-full flex items-center">
+<input class="w-full accent-primary h-1.5 bg-surface-container-high rounded-lg cursor-pointer appearance-none" max="100" min="0" step="1" type="range" value="15"/>
+</div>
+<div class="flex justify-between text-outline font-label-code-sm text-[10px]">
+<span>0% (Clean)</span>
+<span>Additive AWGN</span>
+<span>100%</span>
+</div>
+</div>
+<!-- Random Seed Input -->
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<label class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Stochastic Seed</label>
+<div class="flex gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-surface-container-low font-label-code-md text-label-code-md text-on-surface px-space-sm py-2 rounded-xl focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" type="text" value="42"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-code-sm text-label-code-sm text-outline">int32</span>
+</div>
+<button class="px-3 bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95 rounded-xl flex items-center justify-center transition-all shadow-sm" title="Shuffle Random Seed" type="button">
+<span class="material-symbols-outlined text-[18px]">casino</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Primary Action CTA -->
+<button class="w-full py-3.5 px-space-md bg-primary hover:bg-secondary active:scale-[0.99] text-on-primary rounded-2xl shadow-md transition-all flex items-center justify-between group" id="runModelBtn" type="button">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] transition-transform group-hover:rotate-12">auto_awesome</span>
+<span class="font-body-md text-body-md font-semibold tracking-wide">Run Model</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-code-sm text-label-code-sm text-primary-fixed-dim bg-white/10 px-2 py-0.5 rounded">⌘ + Enter</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</div>
+</button>
+</div>
+<!-- RIGHT COLUMN: Evaluation Canvas & Diagnostics -->
+<div class="flex-1 w-full min-w-0 flex flex-col gap-space-lg">
+<!-- Card: Result -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md lg:p-space-lg flex flex-col gap-space-md">
+<!-- Header -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Restoration Result</h1>
+<div class="flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="font-label-code-sm text-label-code-sm font-semibold text-on-surface">Completed in 142ms</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">split_scene</span>
+<span class="hidden sm:inline">Compare Slider</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-primary text-on-primary hover:bg-secondary font-body-sm text-body-sm font-semibold shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">download_for_offline</span>
+              Download All
+            </button>
+</div>
+</div>
+<!-- Three Horizontal Image Comparison Panels -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Panel 1: Model input (Corrupted) -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<div class="p-space-xs px-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-label-code-sm text-label-code-sm font-semibold text-on-surface truncate">1. Input (Corrupted)</span>
+</div>
+<span class="font-label-code-sm text-[10px] text-outline">G-BLUR</span>
+</div>
+<div class="relative aspect-square w-full bg-surface-container-high overflow-hidden group">
+<img class="w-full h-full object-cover filter blur-[3px]" data-alt="Photographic headshot of a person blurred with a heavy simulated Gaussian defocus kernel, smooth low-contrast facial contours without high-frequency edge detail, natural studio lighting tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK_BwkIjVXivB1yrOG6oZHQcxmFBRP4P_BkwCf7v8dTMPlEgKRmdCjYmx6BeAQH6gi_9lvkIa_tKEUx17UlD3Ld_I8lEmgfhiQoAKCo78EuP19YJiMQBziOiab2n3s15ATAnwjFnSxsAyk5ZdH501imYPbCfBaXqMtEl9I2yKWCWlKAPScC0wjYFFSl0A4IEJnZqugD991oC2H7aTnzcFtQGy80S23JbSFVQg6e3TkB41ZrHjyqlIS"/>
+<div class="absolute top-2 left-2 bg-inverse-surface/85 backdrop-blur-sm text-inverse-on-surface font-label-code-sm text-[10px] px-2 py-0.5 rounded shadow">
+                σ = 2.4
+              </div>
+</div>
+<div class="p-space-xs px-space-sm bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-code-sm text-label-code-sm font-bold text-outline">14.2 dB PSNR</span>
+<a class="font-label-code-sm text-label-code-sm text-primary hover:text-secondary flex items-center gap-0.5" href="#">
+                Download PNG
+                <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+</a>
+</div>
+</div>
+<!-- Panel 2: Restored output -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<div class="p-space-xs px-space-sm bg-primary-fixed flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-label-code-sm text-label-code-sm font-bold text-on-primary-fixed truncate">2. Restored Output</span>
+</div>
+<span class="font-label-code-sm text-[10px] text-primary-container bg-surface-container-lowest/80 px-1.5 py-0.5 rounded font-bold">OPTIMAL</span>
+</div>
+<div class="relative aspect-square w-full bg-surface-container-high overflow-hidden group">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Crisp, super-resolved ultra-detailed photographic headshot of the exact same woman, razor sharp eyelashes, skin pores, hair strands restored by computational transformer neural network, luminous studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwQxgEY3KPxYc1jRWxlsJXPq2moF9uXtxqpukLRiC4ALLZVA4jlCv_kHCJtyk_4O6RhfYdSqw1AedRdR48ihTqlxvNR23q3-EY__SjHTQboCbtn6yNXLvBzr9G__0oDiQIZpXC9LvERGvzWGD1ZzmEKWf17EO7xkth8_YGbJDMbR7CciL4X55d1XDcWlcX4O8vWJAtD6g1eMcj_nxSbcIeUnSo6xK31gKhCuzUNFp-0KA14ctQtX2p"/>
+<div class="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm text-on-primary font-label-code-sm text-[10px] px-2 py-0.5 rounded shadow">
+                Restormer Univ
+              </div>
+<div class="absolute bottom-2 right-2 bg-inverse-surface/90 text-inverse-on-surface font-label-code-sm text-[10px] px-2 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-emerald-400">check_circle</span>
+                Tensors Aligned
+              </div>
+</div>
+<div class="p-space-xs px-space-sm bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-code-sm text-label-code-sm font-bold text-tertiary">31.8 dB PSNR</span>
+<a class="font-label-code-sm text-label-code-sm text-primary hover:text-secondary flex items-center gap-0.5" href="#">
+                Download PNG
+                <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+</a>
+</div>
+</div>
+<!-- Panel 3: Absolute error map -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<div class="p-space-xs px-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="font-label-code-sm text-label-code-sm font-semibold text-on-surface truncate">3. Absolute Error Map</span>
+</div>
+<span class="font-label-code-sm text-[10px] text-outline">JET CMAP</span>
+</div>
+<div class="relative aspect-square w-full bg-inverse-surface overflow-hidden group">
+<img class="w-full h-full object-cover mix-blend-screen opacity-90 transition-transform duration-500 group-hover:scale-105" data-alt="Scientific pseudocolor visualization using Jet heat colormap showing low residuals in deep blue and localized high-frequency edge difference errors in glowing cyan, yellow, and red along contours on a dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAprAoM8gvWWa2SmyUoXYSFxJqBdu95J5YIWLS6BruOUY8eLJWT_oxBIK7nBQPMBnkJ8EH1c7NXM3rYOCaVRBZAEPxjCN7bTcRcDmNg9gWC2b54iO1MvPK3SBHKjEZSoZQH3Ql7oUh8BgU21N8oD2dYMv98cYHPwtVKTqzHcS8dA8PBzeBQCjD1zaf1pnlvV6My2VqJY4zZu06-ZLdM6p0ml4unsdsIu-rGBFz72g7ionXVfHiD-sm-"/>
+<!-- Monospace Spectrum Legend Overlay -->
+<div class="absolute bottom-2 left-2 right-2 bg-inverse-surface/90 backdrop-blur-sm p-1.5 rounded-lg flex items-center gap-2">
+<span class="font-label-code-sm text-[9px] text-inverse-on-surface">0.0</span>
+<div class="flex-1 h-2 rounded bg-gradient-to-r from-blue-700 via-cyan-400 via-yellow-400 to-red-600"></div>
+<span class="font-label-code-sm text-[9px] text-inverse-on-surface">0.08+</span>
+</div>
+</div>
+<div class="p-space-xs px-space-sm bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-code-sm text-label-code-sm font-bold text-outline">MAE: 0.018</span>
+<a class="font-label-code-sm text-label-code-sm text-primary hover:text-secondary flex items-center gap-0.5" href="#">
+                Download Heatmap
+                <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Card: System Information & Benchmark Telemetry -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md lg:p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">monitor_heart</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">System Information</h2>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">FP16 ENGINE · TRT-10.1</span>
+</div>
+<!-- 4 Grid Stat Tiles -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-sm">
+<!-- Tile 1 -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Inference Time</span>
+<div class="mt-2 flex items-baseline gap-1.5">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">142</span>
+<span class="font-label-code-md text-label-code-md text-outline">ms</span>
+</div>
+<div class="mt-2 flex items-center gap-1 font-label-code-sm text-label-code-sm text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              GPU TensorRT Active
+            </div>
+</div>
+<!-- Tile 2 -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">PSNR Before → After</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg font-bold text-tertiary">31.8</span>
+<span class="font-label-code-md text-label-code-md text-tertiary font-medium">dB</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-code-sm text-label-code-sm">
+<span class="text-outline">14.2 → 31.8 dB</span>
+<span class="text-primary font-bold bg-primary-fixed/60 px-1 rounded">+17.6 dB</span>
+</div>
+</div>
+<!-- Tile 3 -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">Model Backbone</span>
+<div class="mt-2 font-headline-md text-headline-md font-bold text-on-surface truncate" title="Restormer Universal">
+              Restormer
+            </div>
+<div class="mt-2 font-label-code-sm text-label-code-sm text-on-surface-variant truncate">
+              Universal Weights (v2.1)
+            </div>
+</div>
+<!-- Tile 4 -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-outline">SSIM Improvement</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">0.918</span>
+<span class="font-label-code-sm text-label-code-sm text-emerald-600 font-semibold">(+43%)</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-code-sm text-label-code-sm">
+<span class="text-outline">Base 0.642</span>
+<span class="text-outline">ΔSSIM 0.276</span>
+</div>
+</div>
+</div>
+<!-- Inline Visual Metric Progress Visualization -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex justify-between items-center text-label-code-sm font-label-code-sm">
+<span class="text-on-surface font-medium">Fidelity Convergence Spectrum (L1 Loss + Frequency Constraint)</span>
+<span class="text-primary font-semibold">Loss: 0.0034</span>
+</div>
+<!-- Sparkline Mini SVG -->
+<div class="h-10 w-full flex items-center">
+<svg class="w-full h-full text-primary" fill="none" preserveaspectratio="none" viewbox="0 0 600 40">
+<path d="M0,35 Q30,30 60,32 T120,24 T180,18 T240,15 T300,12 T360,9 T420,7 T480,5 T540,4 L600,4" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M0,35 Q30,30 60,32 T120,24 T180,18 T240,15 T300,12 T360,9 T420,7 T480,5 T540,4 L600,4 L600,40 L0,40 Z" fill="currentColor" fill-opacity="0.08"></path>
+<!-- Target milestone points -->
+<circle cx="240" cy="15" fill="currentColor" r="3"></circle>
+<circle cx="480" cy="5" fill="currentColor" r="3"></circle>
+<circle class="text-tertiary" cx="600" cy="4" fill="currentColor" r="3.5"></circle>
+</svg>
+</div>
+</div>
+<!-- Bottom Corruption Settings Summary Bar -->
+<div class="px-space-md py-space-sm rounded-xl bg-surface-container flex flex-wrap items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">tune</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface font-semibold">Active Run Configuration:</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">
+              Gaussian Blur (σ=2.4, Kernel=11×11, Seed=42)
+            </span>
+</div>
+<div class="flex items-center gap-3 font-label-code-sm text-label-code-sm text-outline">
+<span>Precision: <strong class="text-on-surface font-semibold">FP16</strong></span>
+<span>Batch: <strong class="text-on-surface font-semibold">1×3×512×512</strong></span>
+<button class="text-primary hover:underline font-medium" type="button">Export Spec</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+    // Lightweight interactivity for run trigger & keyboard shortcut
+    document.addEventListener('DOMContentLoaded', () => {
+      const runBtn = document.getElementById('runModelBtn');
+      if (runBtn) {
+        runBtn.addEventListener('click', () => {
+          const originalContent = runBtn.innerHTML;
+          runBtn.innerHTML = `
+            <div class="flex items-center gap-space-xs">
+              <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span class="font-body-md text-body-md font-semibold tracking-wide">Inferring Tensor...</span>
+            </div>
+            <span class="font-label-code-sm text-label-code-sm text-primary-fixed-dim">CUDA 0</span>
+          `;
+          runBtn.disabled = true;
+          setTimeout(() => {
+            runBtn.innerHTML = originalContent;
+            runBtn.disabled = false;
+          }, 800);
+        });
+      }
+
+      // Hotkey CMD+Enter or CTRL+Enter
+      window.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          if (runBtn) runBtn.click();
+        }
+      });
+    });
+  </script>
+</div></main><div class="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-surface-container-lowest shadow-[0_-1px_8px_rgba(0,0,0,0.05)] z-50 flex items-center justify-around px-space-xs"><a class="flex flex-col items-center justify-center text-outline hover:text-primary" data-path="universal-restoration" href="#"><span class="material-symbols-outlined text-[20px]">filter_vintage</span><span class="font-label-code-sm text-[9px]">Universal</span></a><a class="flex flex-col items-center justify-center text-outline hover:text-primary" data-path="hard-routed-restoration" href="#"><span class="material-symbols-outlined text-[20px]">alt_route</span><span class="font-label-code-sm text-[9px]">Routed</span></a><a class="flex flex-col items-center justify-center text-outline hover:text-primary" data-path="soft-mixture-of-experts" href="#"><span class="material-symbols-outlined text-[20px]">hub</span><span class="font-label-code-sm text-[9px]">MoE</span></a><a class="flex flex-col items-center justify-center text-outline hover:text-primary" data-path="face-to-sketch-generator" href="#"><span class="material-symbols-outlined text-[20px]">draw</span><span class="font-label-code-sm text-[9px]">Sketch</span></a></div></div></body></html>

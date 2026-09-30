@@ -63,9 +63,17 @@ def tiny_png(size=(90, 70)):
         return base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
 
 
-st, h = call("GET", "/api/health")
-check("health: status ok and all 4 workspaces ready", st == 200 and h["status"] == "ok" and all(h["workspaces"].values()), str(h.get("workspaces")))
-check("health: all 7 ONNX models loaded", st == 200 and sum(m["loaded"] for m in h["models"].values()) == 7)
+import time
+for _ in range(30):  # the backend may still be starting (e.g. right after `docker compose up`)
+    st, h = call("GET", "/api/health")
+    if st == 200 and isinstance(h, dict):
+        break
+    time.sleep(2)
+if not (st == 200 and isinstance(h, dict)):
+    print(f"FAIL backend not reachable at {BASE} (HTTP {st}); is `docker compose up` running?")
+    sys.exit(1)
+check("health: status ok and all 4 workspaces ready", h["status"] == "ok" and all(h["workspaces"].values()), str(h.get("workspaces")))
+check("health: all 7 ONNX models loaded", sum(m["loaded"] for m in h["models"].values()) == 7)
 st, page = call("GET", "/")
 check("frontend index served", st == 200 and b"root" in page)
 st, _ = call("GET", "/api/docs")

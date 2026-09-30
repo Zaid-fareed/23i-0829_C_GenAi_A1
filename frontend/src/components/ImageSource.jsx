@@ -3,12 +3,12 @@ import { getSamples } from "../api.js";
 import { Button, Segmented } from "./ui.jsx";
 
 /**
- * Input picker (Stitch: Upload / Sample / Webcam segmented control).
+ * Compact input picker (Stitch: Upload / Sample / Webcam tabs + a one-line summary of the chosen image).
  * Reports { file, sample, previewUrl, name } through onChange.
  */
-export default function ImageSource({ value, onChange, webcam = false }) {
+export default function ImageSource({ value, onChange, webcam = false, sampleFilter = null }) {
   const [samples, setSamples] = useState([]);
-  const [tab, setTab] = useState("upload");
+  const [tab, setTab] = useState("sample");
   const [camOn, setCamOn] = useState(false);
   const [camErr, setCamErr] = useState("");
   const [over, setOver] = useState(false);
@@ -48,29 +48,30 @@ export default function ImageSource({ value, onChange, webcam = false }) {
     c.toBlob((b) => { pickFile(new File([b], "webcam.png", { type: "image/png" })); stopCam(); }, "image/png");
   };
 
-  const tabs = [["upload", "Upload"], ["sample", "Sample"], ...(webcam ? [["webcam", "Webcam"]] : [])];
+  const shown = sampleFilter ? samples.filter((s) => s.startsWith(sampleFilter)) : samples;
+  const tabs = [["sample", "Sample"], ["upload", "Upload"], ...(webcam ? [["webcam", "Webcam"]] : [])];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <Segmented options={tabs} value={tab} onChange={(k) => { setTab(k); if (k !== "webcam") stopCam(); }} />
 
       {tab === "upload" && (
         <label
           onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
           onDrop={(e) => { e.preventDefault(); setOver(false); pickFile(e.dataTransfer.files[0]); }}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-[1.5px] border-dashed px-4 py-6 text-sm text-slate-600 transition ${over ? "border-brand-500 bg-brand-50" : "border-slate-300 bg-slate-50 hover:border-brand-500"}`}>
-          <span className="font-medium">Drag &amp; drop an image, or click to browse</span>
+          className={`flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border-[1.5px] border-dashed px-3 py-4 text-center text-sm text-slate-600 transition ${over ? "border-brand-500 bg-brand-50" : "border-slate-300 bg-slate-50 hover:border-brand-500"}`}>
+          <span className="font-medium">Drop an image or click to browse</span>
           <span className="font-mono text-[11px] text-slate-400">JPEG / PNG / WebP · max 10 MB</span>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/bmp" className="hidden" onChange={(e) => pickFile(e.target.files[0])} />
         </label>
       )}
 
       {tab === "sample" && (
-        samples.length ? (
-          <div className="flex flex-wrap gap-2">
-            {samples.map((s) => (
-              <button key={s} onClick={() => onChange({ file: null, sample: s, previewUrl: `/api/samples/${s}`, name: s })}
-                className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${value.sample === s ? "border-brand-600" : "border-transparent"}`}>
+        shown.length ? (
+          <div className="grid grid-cols-5 gap-1.5">
+            {shown.map((s) => (
+              <button key={s} title={s} onClick={() => onChange({ file: null, sample: s, previewUrl: `/api/samples/${s}`, name: s })}
+                className={`aspect-square overflow-hidden rounded-lg border-2 ${value.sample === s ? "border-brand-600" : "border-transparent hover:border-slate-300"}`}>
                 <img src={`/api/samples/${s}`} alt={s} className="h-full w-full object-cover" />
               </button>
             ))}
@@ -82,18 +83,21 @@ export default function ImageSource({ value, onChange, webcam = false }) {
         <div className="space-y-2">
           {camOn ? (
             <>
-              <video ref={video} autoPlay playsInline muted className="w-full max-w-sm rounded-xl bg-black" />
-              <Button onClick={snap}>Capture photo</Button>
+              <video ref={video} autoPlay playsInline muted className="w-full rounded-xl bg-black" />
+              <Button className="w-full" onClick={snap}>Capture photo</Button>
             </>
-          ) : <Button variant="secondary" onClick={startCam}>Start webcam</Button>}
+          ) : <Button variant="secondary" className="w-full" onClick={startCam}>Start webcam</Button>}
           {camErr && <p className="text-sm text-rose-600">{camErr}</p>}
         </div>
       )}
 
       {value.previewUrl && (
-        <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-          <img src={value.previewUrl} alt="selected" className="mx-auto max-h-56 w-full object-contain" />
-          <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-slate-900/70 px-2 py-0.5 font-mono text-[11px] text-white">{value.name}</span>
+        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
+          <img src={value.previewUrl} alt="selected" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+          <div className="min-w-0">
+            <div className="truncate font-mono text-xs text-slate-900">{value.name}</div>
+            <div className="text-[11px] text-slate-400">selected input</div>
+          </div>
         </div>
       )}
     </div>

@@ -25,13 +25,17 @@ from src.utils.common import get_device, remaining_trials, seed_everything, setu
 EXPERIMENT = "task3_soft_moe"
 
 
-def suggest(trial: optuna.Trial) -> dict:
+def sfx(args):
+    return f"_{args.tag}" if args.tag else ""
+
+
+def suggest(trial: optuna.Trial, alpha_min: float = 0.2) -> dict:
     return {
         "lr": trial.suggest_float("lr", 1e-5, 5e-4, log=True),           # joint fine-tune lr (smaller than warm-up)
         "temperature": trial.suggest_float("temperature", 0.3, 3.0, log=True),
         "w_cls": trial.suggest_float("w_cls", 0.01, 2.0, log=True),      # classification weight
         "w_bal": trial.suggest_float("w_bal", 0.0, 2.0),                 # balance weight
-        "alpha": trial.suggest_float("alpha", 0.2, 0.95),                # reconstruction L1/SSIM weighting
+        "alpha": trial.suggest_float("alpha", alpha_min, 0.95),         # reconstruction L1/SSIM weighting
     }
 
 
@@ -58,7 +62,7 @@ def run_training(params, args, device, trial=None, ckpt_path=None, prefix="", re
 
 
 def objective(trial, args, device):
-    params = suggest(trial)
+    params = suggest(trial, args.alpha_min)
     mlflow.start_run(run_name=f"trial_{trial.number}", nested=True)
     status = "FINISHED"
     try:
@@ -90,33 +94,35 @@ def cmd_optuna(args):
     setup_mlflow(EXPERIMENT)
     (paths.REPO_ROOT / "optuna_studies").mkdir(exist_ok=True)
     study = optuna.create_study(
-        study_name="task3_moe", storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / 'task3.db'}",
+        study_name=f"task3_moe{sfx(args)}",
+        storage=f"sqlite:///{paths.REPO_ROOT / 'optuna_studies' / f'task3{sfx(args)}.db'}",
         direction="minimize", sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(n_startup_trials=3, n_warmup_steps=1), load_if_exists=True)
-    with mlflow.start_run(run_name="optuna_study_task3"):
-        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train})
+    with mlflow.start_run(run_name=f"optuna_study_task3{sfx(args)}"):
+        mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.epochs, "max_train": args.max_train,
+                           "alpha_min": args.alpha_min})
         study.optimize(lambda t: objective(t, args, device), n_trials=remaining_trials(study, args.n_trials))
         mlflow.log_metric("best_value", study.best_value)
         mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
     (paths.REPO_ROOT / "configs").mkdir(exist_ok=True)
-    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / "task3_best.json", "w"), indent=2)
-    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / "task3_trials.csv", index=False)
+    json.dump(study.best_params, open(paths.REPO_ROOT / "configs" / f"task3_best{sfx(args)}.json", "w"), indent=2)
+    study.trials_dataframe().to_csv(paths.REPO_ROOT / "optuna_studies" / f"task3{sfx(args)}_trials.csv", index=False)
     print("BEST", study.best_value, study.best_params)
 
 
 def cmd_final(args):
     device = get_device()
     setup_mlflow(EXPERIMENT)
-    params = json.load(open(args.params or paths.REPO_ROOT / "configs" / "task3_best.json"))
+    params = json.load(open(args.params or paths.REPO_ROOT / "configs" / f"task3_best{sfx(args)}.json"))
     seed_everything(42)
-    ckpt = paths.checkpoint_dir() / "task3_moe.pt"
-    with mlflow.start_run(run_name="final_task3"):
+    ckpt = paths.checkpoint_dir() / f"task3_moe{sfx(args)}.pt"
+    with mlflow.start_run(run_name=f"final_task3{sfx(args)}"):
         mlflow.log_params({**params, "epochs": args.epochs, "warmup_epochs": args.warmup_epochs,
                            "warmup_lr": args.warmup_lr, "batch_size": args.batch_size})
         best, hist = run_training(params, args, device, ckpt_path=ckpt, resume=args.resume)
         mlflow.log_metric("best_val_obj", best)
         mlflow.log_artifact(str(ckpt))
-    json.dump(hist, open(paths.checkpoint_dir() / "task3_history.json", "w"))
+    json.dump(hist, open(paths.checkpoint_dir() / f"task3_history{sfx(args)}.json", "w"))
     print("saved", ckpt, "best val obj", best)
 
 
@@ -132,7 +138,12 @@ if __name__ == "__main__":
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--params", default=None)
     ap.add_argument("--resume", action="store_true", help="continue from checkpoints/*.resume")
+    ap.add_argument("--tag", default="", help="suffix for study/config/checkpoint names, e.g. v2 (keeps the original files untouched)")
+    ap.add_argument("--alpha_min", type=float, default=0.2, help="lower bound of the searched reconstruction weight alpha")
     add_ckpt_args(ap)
     a = ap.parse_args()
+    for k in ("salt_pepper", "blur", "occlusion"):  # with --tag, use that tag's specialists unless a path was given
+        if a.tag and getattr(a, k) == str(paths.checkpoint_dir() / f"task2_specialist_{k}.pt"):
+            setattr(a, k, str(paths.checkpoint_dir() / f"task2_specialist_{k}_{a.tag}.pt"))
     seed_everything(42)
     cmd_optuna(a) if a.mode == "optuna" else cmd_final(a)
