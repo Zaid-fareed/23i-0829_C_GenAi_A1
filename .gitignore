@@ -18,3 +18,20 @@ onnx_models_dummy/
 # keep experiment-tracking evidence (small): Optuna studies + MLflow DB
 !optuna_studies/*.db
 !mlflow.db
+# report build intermediates (the PDF, DOCX and the LaTeX zip are kept)
+report/_pages/
+report/_word/
+report/main.aux
+report/main.log
+report/main.out
+report/main.xdv
+report/main.bbl
+report/main.blg
+report/*.fls
+*.bak
+# local-only copies and logs
+onnx_models_v1/
+onnx_models_v2/
+onnx_models_dummy/
+logs/
+!report/Report_Assignment1_latex.zip

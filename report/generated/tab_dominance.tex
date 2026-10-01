@@ -1,0 +1,14 @@
+\begin{tabular}{lccccc}
+\toprule
+True type & \multicolumn{4}{c}{\% of inputs where branch has the largest weight} & mean max weight \\
+\cmidrule(lr){2-5}
+ & identity & salt & blur & occl. & \\
+\midrule
+clean & 99.1 & 0.0 & 0.7 & 0.2 & 0.811 \\
+salt-and-pepper & 0.0 & 100.0 & 0.0 & 0.0 & 0.856 \\
+Gaussian blur & 0.0 & 0.0 & 100.0 & 0.0 & 0.846 \\
+occlusion & 1.9 & 0.0 & 0.0 & 98.0 & 0.921 \\
+\midrule
+all inputs & 10.5 & 30.0 & 30.1 & 29.4 & 0.868 \\
+\bottomrule
+\end{tabular}

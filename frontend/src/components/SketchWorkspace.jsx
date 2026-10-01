@@ -32,11 +32,11 @@ export default function SketchWorkspace() {
       </Section>
       <Section n="02" title="Sketch style" tag="Condition">
         <Segmented options={STYLES.map(([k, l]) => [k, l])} value={style} onChange={setStyle} />
-        <p className="mt-1.5 text-xs text-slate-400">One of the three FS2K style categories, fed to the generator as a learned embedding.</p>
+        <p className="mt-1 text-xs text-slate-400">FS2K style category, given to the generator as an embedding.</p>
       </Section>
       <Section n="03" title="Framing" tag="Preprocessing">
         <Segmented options={[["crop", "Crop"], ["pad", "Pad"], ["stretch", "Stretch"]]} value={fit} onChange={setFit} />
-        <p className="mt-1.5 text-xs text-slate-400">The model saw near-square head-and-shoulders photos. Crop suits tall or wide photos; the left tile shows exactly what it receives.</p>
+        <p className="mt-1 text-xs text-slate-400">Crop suits tall/wide photos; the left tile shows what the model sees.</p>
       </Section>
       <ErrorBox msg={err} />
     </>
@@ -59,20 +59,20 @@ export default function SketchWorkspace() {
         {res ? <Pill tone="ok">Done · {res.inference_ms} ms</Pill> : <Pill tone="warn">{ready ? "Ready to generate" : "Pick a photo"}</Pill>}
       </div>
 
-      <TileRow cols={2} reserve={330}>
+      <TileRow cols={2} reserve={525}>
         <ImagePanel title="Original photograph" src={res?.input_image} filename="photo_128.png" badge={res && "model input · 128×128"} hint="Pick a photo and press Generate" />
         <ImagePanel title={res ? `Generated sketch · ${res.style}` : "Generated sketch"} src={res?.output_image} filename={`sketch_style${style}.png`} badge={res && "grayscale"} hint="The sketch appears here" />
       </TileRow>
 
       {res && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <Button onClick={() => download(res.output_image, `sketch_style${style}.png`)}>↓ Download sketch (PNG)</Button>
           <Button variant="secondary" onClick={() => download(res.input_image, "photo_128.png")}>↓ Photo (PNG)</Button>
         </div>
       )}
 
       {res && (
-        <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-4">
+        <div className="mt-2 grid grid-cols-2 gap-2 xl:grid-cols-4">
           <Stat label="Inference" value={`${res.inference_ms} ms`} hint="ONNX Runtime · CPU" />
           <Stat label="Style condition" value={res.style} hint={`embedding #${style - 1}`} />
           <Stat label="Framing" value={res.fit} hint="preprocessing" />
@@ -81,13 +81,13 @@ export default function SketchWorkspace() {
       )}
 
       {recent.length > 0 && (
-        <div className="mt-4">
-          <div className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500">Recent runs · this session</div>
-          <div className="grid grid-cols-4 gap-2">
+        <div className="mt-2">
+          <div className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500">Recent runs · this session</div>
+          <div className="flex gap-2">
             {recent.map((r, i) => (
-              <div key={i} className="min-w-0">
+              <div key={i} className="w-20 shrink-0">
                 <img src={r.img} alt="" className="aspect-square w-full rounded-lg border border-slate-200 object-cover" />
-                <div className="flex justify-between font-mono text-[11px] text-slate-500"><span>{r.style}</span><span>{r.ms} ms</span></div>
+                <div className="font-mono text-[10px] leading-tight text-slate-500">{r.style.replace("Style ", "S")} · {Math.round(r.ms)} ms</div>
               </div>
             ))}
           </div>

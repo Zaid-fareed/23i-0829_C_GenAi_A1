@@ -7,21 +7,21 @@ import { Button, Card, ErrorBox, ImagePanel, Mono, Pill, Section, Segmented, Sta
 const KINDS = {
   universal: {
     title: "Universal Restoration",
-    blurb: "One denoising autoencoder restores clean, noisy, blurred and occluded images without being told the corruption type.",
+    blurb: "One autoencoder restores clean, noisy, blurred and occluded images without being told which.",
     path: "/api/restore/universal",
-    reserve: 360,
+    reserve: 340,
   },
   hard: {
     title: "Hard-Routed Restoration",
-    blurb: "A classifier predicts the corruption and sends the image to exactly one specialist. Clean images bypass restoration.",
+    blurb: "A classifier picks one specialist per image; clean images bypass restoration.",
     path: "/api/restore/hard",
-    reserve: 560,
+    reserve: 500,
   },
   soft: {
     title: "Soft Mixture-of-Experts",
-    blurb: "A gating network gives every branch (identity + 3 experts) a weight; the output is their weighted sum.",
+    blurb: "A gate weights all branches (identity + 3 experts); the output is their weighted sum.",
     path: "/api/restore/soft",
-    reserve: 560,
+    reserve: 500,
   },
 };
 
@@ -45,6 +45,7 @@ export default function RestoreWorkspace({ kind }) {
   const [err, setErr] = useState("");
   const [res, setRes] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showClean, setShowClean] = useState(false);
 
   const run = async () => {
     setBusy(true); setErr("");
@@ -71,7 +72,6 @@ export default function RestoreWorkspace({ kind }) {
       </Section>
       <Section n="02" title="Runtime corruption" tag="Synthesizer">
         <CorruptionControls value={cor} onChange={setCor} />
-        <p className="mt-2 text-xs text-slate-400">Choose “None” to restore an image that is already corrupted.</p>
       </Section>
       {kind === "hard" && (
         <Section n="03" title="Routing mode">
@@ -91,12 +91,12 @@ export default function RestoreWorkspace({ kind }) {
 
   return (
     <Workbench controls={controls} footer={footer}>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+      <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-xl font-bold leading-7 tracking-tight text-slate-900">{cfg.title}</h2>
-          <p className="max-w-2xl text-sm text-slate-500">{cfg.blurb}</p>
+          <p className="text-sm text-slate-500">{cfg.blurb}</p>
         </div>
-        {res ? <Pill tone="ok">Done · {ms} ms</Pill> : <Pill tone="warn">{ready ? "Ready to run" : "Pick an image"}</Pill>}
+        <span className="shrink-0">{res ? <Pill tone="ok">Done · {ms} ms</Pill> : <Pill tone="warn">{ready ? "Ready to run" : "Pick an image"}</Pill>}</span>
       </div>
 
       <TileRow cols={3} reserve={cfg.reserve}>
@@ -106,23 +106,16 @@ export default function RestoreWorkspace({ kind }) {
           hint={res && !res.quality ? "Needs a clean reference: apply a corruption" : "Where the restoration differs from the original"} />
       </TileRow>
 
-      {res?.clean_image && (
-        <details className="mt-2 text-sm text-slate-600">
-          <summary className="cursor-pointer text-xs">Show original (clean) image</summary>
-          <img src={res.clean_image} alt="clean" className="mt-2 h-28 w-28 rounded-lg border" />
-        </details>
-      )}
-
       {res && kind === "hard" && (
-        <Card className="mt-3" title="Classifier probabilities" right={<Mono className="text-xs text-slate-500">mode: {res.mode} · argmax</Mono>}>
-          <WeightBars data={res.probabilities} selected={res.predicted} selectedLabel="Predicted" />
+        <Card className="mt-2" title="Classifier probabilities" right={<Mono className="text-xs text-slate-500">mode: {res.mode} · argmax</Mono>}>
+          <WeightBars data={res.probabilities} selected={res.predicted} selectedLabel="Predicted" cols={2} />
           {res.misrouted && <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">Classifier error: predicted “{res.predicted}” but the applied corruption was “{res.corruption.type}”.</p>}
         </Card>
       )}
 
       {res && kind === "soft" && (
-        <Card className="mt-3" title="Routing weights (gate output)">
-          <WeightBars data={res.weights} selected={res.dominant} selectedLabel="Dominant" />
+        <Card className="mt-2" title="Routing weights (gate output)">
+          <WeightBars data={res.weights} selected={res.dominant} selectedLabel="Dominant" cols={2} />
           <div className="mt-2 flex h-5 overflow-hidden rounded-md text-[10px] text-white">
             {Object.entries(res.weights).map(([k, v], i) => (
               <div key={k} title={`${k}: ${(v * 100).toFixed(1)}%`} style={{ width: `${v * 100}%` }} className={STRIP[i]}>
@@ -147,8 +140,10 @@ export default function RestoreWorkspace({ kind }) {
             {kind === "universal" && <Stat label="Corruption" value={res.corruption.applied ? res.corruption.type : "none"} hint={res.corruption.applied ? res.corruption.severity : "as uploaded"} />}
             {kind === "universal" && <Stat label="Model" value="1 autoencoder" hint="no routing" />}
           </div>
+          {showClean && res.clean_image && <img src={res.clean_image} alt="clean" className="mt-2 h-24 w-24 rounded-lg border" />}
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
             <span className="font-mono">PARAMS: {settingsText(res.corruption)}</span>
+            {res.clean_image && <button onClick={() => setShowClean(!showClean)} className="font-mono text-slate-500 hover:text-slate-800">{showClean ? "hide original" : "show original"}</button>}
             <button onClick={copyJson} className="font-mono font-semibold text-brand-600 hover:text-brand-700">{copied ? "Copied ✓" : "Copy JSON"}</button>
           </div>
         </div>

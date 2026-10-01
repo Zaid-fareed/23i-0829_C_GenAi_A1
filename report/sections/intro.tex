@@ -1,0 +1,15 @@
+\section{Introduction}
+Image restoration asks for a clean image $x$ given a degraded observation $\tilde{x}$. A single network must cope with very different degradations: salt-and-pepper noise destroys isolated pixels, Gaussian blur removes high frequencies everywhere, and occlusion removes whole regions for which no information remains. This report studies how the same restoration problem behaves under three architectural choices and then adds a fourth, paired image-to-image task:
+
+\begin{enumerate}
+\item \textbf{Task~1, universal denoising autoencoder:} one convolutional autoencoder with a real bottleneck that is never told which corruption was applied.
+\item \textbf{Task~2, hard routing:} a four-class corruption classifier followed by one specialist autoencoder per corruption, with an identity bypass for clean inputs.
+\item \textbf{Task~3, soft mixture of experts:} a differentiable gate that mixes an identity branch and the three specialists, initialised from Task~2 and fine-tuned jointly.
+\item \textbf{Task~4, face-to-sketch cGAN:} a U-Net generator and PatchGAN discriminator conditioned on one of three FS2K sketch styles.
+\end{enumerate}
+
+Beyond the models, the assignment requires the complete path from research to a working product: Optuna searches for every task, MLflow experiment tracking, ONNX export with numerical verification, and a containerised web application (FastAPI back end, React and Tailwind front end) whose interface was first designed in Google Stitch. The source code, configuration, Optuna studies, export code, Dockerfiles and instructions are in the repository at \repo.
+
+\textbf{Contributions.} (i)~A complete, reproducible implementation of the four tasks with a deterministic evaluation protocol in which every test image is evaluated under all ten conditions (36,690 inputs). (ii)~A quantitative comparison of universal, hard-routed and soft-mixture restoration, including an analysis of classifier-induced failures and of the gate's behaviour. (iii)~Two diagnosed and corrected failures from our own experiments: an under-fitted first autoencoder, and specialists whose SSIM-heavy loss weight made them discard colour. (iv)~A deployed application that exposes all models with timing, routing and error-map information, and whose claims are checked by automated tests.
+
+\textbf{Organisation.} Section~\ref{sec:related} reviews the literature and records the design decisions. Section~\ref{sec:data} defines the data, the corruption protocol and the metrics. Sections~\ref{sec:t1}--\ref{sec:t4} treat the four tasks in turn (architecture, losses, training, Optuna, results, failures). Section~\ref{sec:app} describes the application and deployment, Section~\ref{sec:limits} states limitations, and the appendices contain the AI-use statement and reproduction steps.

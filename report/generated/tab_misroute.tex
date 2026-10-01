@@ -1,0 +1,13 @@
+\begin{tabular}{llrr}
+\toprule
+True input & Routed to & Count & Mean $\Delta$SSIM vs.\ oracle route \\
+\midrule
+occlusion (low) & clean & 126 & +0.123 \\
+clean & Gaussian blur & 68 & -0.134 \\
+clean & occlusion & 18 & -0.252 \\
+occlusion (low) & Gaussian blur & 3 & -0.085 \\
+other (fewer than 3 each) & -- & 3 & -- \\
+\midrule
+all mis-routed inputs & -- & 218 & +0.009 \\
+\bottomrule
+\end{tabular}

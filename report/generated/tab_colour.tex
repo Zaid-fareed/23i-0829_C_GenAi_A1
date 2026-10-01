@@ -1,0 +1,13 @@
+\begin{tabular}{lcc}
+\toprule
+Model output & salt-and-pepper inputs & occlusion inputs \\
+\midrule
+clean image (reference) & 100\% & 100\% \\
+corrupted input & 91\% & 77\% \\
+universal AE (Task 1) & 97\% & 96\% \\
+specialist, first run ($\alpha\approx0.3$) & 43\% & 79\% \\
+specialist, final ($\alpha\approx0.6$) & 89\% & 88\% \\
+soft MoE, first run ($\alpha\approx0.3$) & 46\% & 94\% \\
+soft MoE, final ($\alpha\approx0.6$) & 97\% & 94\% \\
+\bottomrule
+\end{tabular}

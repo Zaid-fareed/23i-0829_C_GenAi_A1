@@ -1,0 +1,14 @@
+\begin{tabular}{lccccccc}
+\toprule
+ & \multicolumn{3}{c}{SSIM} & & \multicolumn{2}{c}{L1} & \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-7}
+Input type & no restoration & universal & oracle & predicted & oracle & predicted & misroute \% \\
+\midrule
+clean & 1.000 & 0.814 & 1.000 & 0.996 & 0.0000 & 0.0010 & 2.34 \\
+salt-and-pepper & 0.382 & 0.805 & 0.793 & 0.793 & 0.0444 & 0.0444 & 0.00 \\
+Gaussian blur & 0.814 & 0.790 & 0.780 & 0.780 & 0.0449 & 0.0449 & 0.01 \\
+occlusion & 0.713 & 0.707 & 0.689 & 0.690 & 0.0597 & 0.0594 & 1.19 \\
+\midrule
+all (36,690) & 0.672 & 0.772 & 0.779 & 0.779 & 0.0447 & 0.0447 & 0.59 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,21 @@
+\begin{tabular}{llcccccr}
+\toprule
+ & & & \multicolumn{2}{c}{Input (no restoration)} & \multicolumn{3}{c}{Universal autoencoder} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+Corruption & Setting & Level & SSIM & PSNR & L1 & SSIM & PSNR \\
+\midrule
+clean & -- & -- & 1.000 & $\geq$60 & 0.036 & 0.814$\pm$0.080 & 25.97 \\
+salt-and-pepper & $p{=}0.03$ & low & 0.602 & 20.13 & 0.036 & 0.813$\pm$0.080 & 25.95 \\
+salt-and-pepper & $p{=}0.08$ & medium & 0.339 & 15.87 & 0.036 & 0.808$\pm$0.081 & 25.89 \\
+salt-and-pepper & $p{=}0.15$ & high & 0.204 & 13.14 & 0.037 & 0.796$\pm$0.082 & 25.68 \\
+Gaussian blur & $k{=}3,\sigma{=}0.7$ & low & 0.944 & 32.34 & 0.035 & 0.814$\pm$0.081 & 26.17 \\
+Gaussian blur & $k{=}5,\sigma{=}1.5$ & medium & 0.806 & 26.77 & 0.036 & 0.805$\pm$0.083 & 26.04 \\
+Gaussian blur & $k{=}7,\sigma{=}2.5$ & high & 0.692 & 24.35 & 0.039 & 0.751$\pm$0.097 & 25.13 \\
+occlusion & 1 rect, 10\% & low & 0.861 & 16.67 & 0.043 & 0.768$\pm$0.083 & 23.56 \\
+occlusion & 2 rects, 20\% & medium & 0.730 & 13.34 & 0.051 & 0.718$\pm$0.086 & 21.66 \\
+occlusion & 3 rects, 35\% & high & 0.547 & 10.77 & 0.067 & 0.634$\pm$0.091 & 19.21 \\
+\midrule
+\multicolumn{3}{l}{all corrupted (33,021)} & 0.636 & 19.27 & 0.042 & 0.767 & 24.36 \\
+\multicolumn{3}{l}{all conditions (36,690)} & 0.672 & 23.34 & 0.042 & 0.772 & 24.52 \\
+\bottomrule
+\end{tabular}

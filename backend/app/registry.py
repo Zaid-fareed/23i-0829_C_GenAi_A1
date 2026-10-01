@@ -45,7 +45,7 @@ class ModelRegistry:
             "models": {k: {"loaded": k in self.sessions, "file": MODEL_FILES[k], "error": self.errors.get(k)}
                        for k in MODEL_FILES},
             "workspaces": {w: all(k in self.sessions for k in need) for w, need in WORKSPACE_NEEDS.items()},
-            "providers": ort.get_available_providers(),
+            "providers": (next(iter(self.sessions.values())).get_providers() if self.sessions else ort.get_available_providers()),
             "onnxruntime": ort.__version__,
         }
 

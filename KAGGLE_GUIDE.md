@@ -134,3 +134,22 @@ Tip: if a session dies unexpectedly, Kaggle keeps output only for *committed* ru
 * CUDA out of memory -> lower batch size range in `suggest()`; * session limit -> run tasks in separate sessions,
   each ending with step 7 (upload the previous `results.zip` as an input dataset to continue Task 3 after Task 2).
 * MLflow UI locally: `mlflow ui --backend-store-uri sqlite:///mlflow.db` (this is needed for the demo video).
+
+## 9. The corrected second run of the specialists and the mixture (what the final models used)
+The first specialists chose an SSIM-heavy loss weight (alpha 0.29) and lost half the image colour (see report, Sec. 5.3).
+The final models were trained with the alpha search restricted to [0.55, 0.95] and tagged `v2`, so nothing of the first
+run was overwritten. The Kaggle code zip must contain `checkpoints/task2_classifier.pt` and `manifests/` (the pack script
+adds them). Cells (after the setup cells of section 1; use a separate MLflow database):
+```python
+os.environ["MLFLOW_TRACKING_URI"] = "sqlite:///mlflow_task23_v2.db"
+!python -m src.train.task2_specialists optuna --n_trials 8 --epochs 6 --max_train 1000 --tag v2 --alpha_min 0.55
+!python -m src.train.task2_specialists final --epochs 100 --tag v2
+!python -m src.train.task3 optuna --n_trials 8 --warmup_epochs 1 --epochs 3 --max_train 1000 --tag v2 --alpha_min 0.55
+!python -m src.train.task3 final --warmup_epochs 2 --epochs 30 --tag v2
+C = "checkpoints"
+!python -m src.export.export_task2 --classifier {C}/task2_classifier.pt --salt_pepper {C}/task2_specialist_salt_pepper_v2.pt --blur {C}/task2_specialist_blur_v2.pt --occlusion {C}/task2_specialist_occlusion_v2.pt --out_dir onnx_models_v2
+!python -m src.export.export_task3 --ckpt {C}/task3_moe_v2.pt --out onnx_models_v2/task3_soft_moe.onnx
+```
+The extra MLflow databases are merged into `mlflow.db` with `python scripts/merge_mlflow.py --src mlflow_task23_v2.db mlflow_task4_v2.db`.
+
+A second Task 4 recipe (`--tag v2 --photometric --lr_decay`) was also trained and rejected (worse test SSIM); it is documented in the report.

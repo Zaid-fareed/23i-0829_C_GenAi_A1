@@ -1,0 +1,9 @@
+{
+  "task1_universal_dae.onnx": "12.4",
+  "task2_classifier.onnx": "0.3",
+  "task2_specialist_salt_pepper.onnx": "15.3",
+  "task2_specialist_blur.onnx": "12.4",
+  "task2_specialist_occlusion.onnx": "15.3",
+  "task3_soft_moe.onnx": "39.8",
+  "task4_generator.onnx": "21.1"
+}

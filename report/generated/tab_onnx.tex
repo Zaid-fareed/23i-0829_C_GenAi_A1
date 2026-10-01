@@ -1,0 +1,13 @@
+\begin{tabular}{lrrr}
+\toprule
+Model & Size (MB) & Max $|$PyTorch$-$ONNX$|$ & Latency (ms) \\
+\midrule
+Task 1 universal autoencoder & 16.1 & 5.4e-7 & 12.4 \\
+Task 2 classifier & 1.2 & 2.0e-6 & 0.3 \\
+Task 2 specialist (salt-and-pepper) & 16.1 & 5.7e-7 & 15.3 \\
+Task 2 specialist (blur) & 16.1 & 4.5e-7 & 12.4 \\
+Task 2 specialist (occlusion) & 16.1 & 5.4e-7 & 15.3 \\
+Task 3 soft mixture (whole pipeline) & 49.4 & 2.4e-7 & 39.8 \\
+Task 4 generator & 168.5 & 1.4e-6 & 21.1 \\
+\bottomrule
+\end{tabular}

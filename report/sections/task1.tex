@@ -1,0 +1,64 @@
+\section{Task 1: Universal Multi-Corruption Denoising Autoencoder}\label{sec:t1}
+
+\subsection{Architecture}
+The network (Fig.~\ref{fig:arch1}) has a convolutional encoder, a compressed latent, and a convolutional decoder, and receives no information about the corruption type. The encoder halves the spatial size four times ($128\to8$) while widening the channels ($48,96,192,384$); each stage is a stride-2 $3\times3$ convolution followed by a $3\times3$ convolution, both with batch normalisation and ReLU. A $1\times1$ convolution projects to a \emph{linear} latent $z$ of $32\times8\times8=2{,}048$ values (4.2\% of the $49{,}152$ pixel values), followed by Dropout2d. The decoder mirrors the encoder with nearest-neighbour $2\times$ upsampling and $3\times3$ convolutions and ends in a $3\times3$ convolution with a sigmoid. There are \textbf{no skip connections}: every pixel of the output must be generated from $z$. The model has 4.01\,M parameters.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{arch_task1.pdf}
+\caption{Universal denoising autoencoder. The only path from input to output goes through the 2,048-value latent.}\label{fig:arch1}
+\end{figure*}
+
+\subsection{Loss and training}
+With $\hat{x}=D(E(\tilde{x}))$ the loss is
+\begin{equation}
+\mathcal{L}_{UDAE}=\alpha\,\mathcal{L}_{1}(x,\hat{x})+(1-\alpha)\bigl(1-\mathrm{SSIM}(x,\hat{x})\bigr),
+\end{equation}
+where L1 encourages accurate pixels and SSIM preserves structure and local contrast. Optuna selected $\alpha=0.58$ (the suggested starting value was 0.8). Training uses AdamW (weight decay $10^{-4}$), a cosine learning-rate schedule, gradient clipping at 1.0, mixed precision on an NVIDIA T4, batch 16 and learning rate $4.6\times10^{-4}$ for 100 epochs over all 2,944 training images, each drawn with a fresh random corruption. The checkpoint with the lowest validation objective $0.5\,\mathcal{L}_1+0.5\,(1-\mathrm{SSIM})$ is kept (epoch \nTOneBestEpoch{}); this objective does not depend on $\alpha$ and is therefore comparable across trials. The search space, trial counts and selected values are in Section~\ref{sec:optuna}.
+
+\subsection{A first attempt that under-fitted}
+Our first complete run (search space with dropout up to 0.3, latent sizes 16--128, three-epoch trials on 600 images, then 30 epochs on 736 images) was measured on the single-condition test manifest and reached only SSIM \nAttemptOneSSIM{} and PSNR \nAttemptOnePSNR{}\,dB. Two observations identified the cause. First, the train--validation gap was only 0.008 SSIM: the model was not memorising, it was \emph{under-fitting}. Second, clean, blurred and noisy inputs all scored about 0.55--0.56 SSIM, so even clean images were reconstructed no better than corrupted ones: the limit was the model's ability to reconstruct at all. Optuna had chosen dropout $0.29$ (dropout in an autoencoder deletes the very features needed for reconstruction) and the largest allowed latent, because three-epoch trials reward configurations that learn fast early. We therefore capped the dropout at 0.15, added latent sizes up to 256, lengthened trials to six epochs, and trained the final model for 100 epochs on all training data. On the same manifest the SSIM rose from \nAttemptOneSSIM{} to \nTOneSSIMsingle{}.
+
+\subsection{Results}
+Table~\ref{tab:task1} gives the results on the full test protocol, separated by corruption and by severity, next to the score of the untouched corrupted input (``no restoration''), which any useful restoration must beat. Figure~\ref{fig:bars} summarises all three restoration systems.
+
+\begin{table*}[t]
+\centering
+\caption{Task 1 (universal autoencoder) on the \nNEntries{} deterministic test inputs. PSNR is clipped at 60\,dB ($\geq$60 for the identical clean input).}\label{tab:task1}
+\small
+\adjustbox{max width=\textwidth}{\input{generated/tab_task1.tex}}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{bar_comparison.pdf}
+\caption{Mean test SSIM per input type for the corrupted input, the universal autoencoder, hard routing and the soft mixture.}\label{fig:bars}
+\end{figure}
+
+\textbf{Salt-and-pepper noise is restored well.} SSIM rises from \nInputSSIMsaltpepper{} to \nTOneSSIMsaltpepper{} and PSNR from \nInPSNRsaltpepper{} to \nTOnePSNRsaltpepper{}\,dB; the output quality is almost independent of severity (0.813 to 0.796 SSIM from $p=0.03$ to $p=0.15$), because the noise is removed by averaging over the many uncorrupted neighbours.
+
+\textbf{Blur is not helped, and clean images are damaged.} For Gaussian blur the output scores \nTOneSSIMblur{} SSIM and \nTOnePSNRblur{}\,dB while the untouched input already scores \nInputSSIMblur{} and \nInPSNRblur{}\,dB; at $k=5$ the two tie (0.805 against 0.806) and only for the strongest blur ($k=7$) does restoration beat the input in SSIM (0.751 against 0.692). Clean images fall from 1.000 to \nTOneSSIMclean{}. The bottleneck cannot reproduce fine detail, so mild blur is ``restored'' into a slightly different soft image. This is the central limitation of the universal design and the motivation for Tasks~2 and~3: an identity path costs nothing on inputs that do not need restoration.
+
+\textbf{Occlusion: SSIM and PSNR disagree.} Overall the output scores \nTOneSSIMocclusion{} SSIM against \nInputSSIMocclusion{} for the masked input, yet PSNR rises from \nInPSNRocclusion{} to \nTOnePSNRocclusion{}\,dB. SSIM is computed in local windows, so the large part of the image outside the black rectangles is already perfect and the mean SSIM of the untouched input stays high; doing nothing scores a higher SSIM than the autoencoder on \nOccNoneBetterLow\% of the low-severity (10\%), \nOccNoneBetterMedium\% of the medium and \nOccNoneBetterHigh\% of the high-severity inputs. PSNR and visual inspection (Fig.~\ref{fig:ex1}) show what SSIM hides: the autoencoder replaces the black holes by plausible content, which removes the large pixel errors inside the mask. Only at 35\% coverage does restoration also win in SSIM (0.634 against 0.547). We therefore read both measures together.
+
+\textbf{Generalisation.} On 736 training images corrupted with validation-style fixed corruptions the SSIM is \nTrainSSIMsub{}, against \nValSSIMsub{} on the 736 unseen validation images (gap \nGapSSIM{}); training and validation curves (Fig.~\ref{fig:curves1}) move together, so the model neither memorises nor over-fits.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{curves_task1.pdf}
+\caption{Task 1 training and validation curves (100 epochs). Validation SSIM is reported separately for each corruption.}\label{fig:curves1}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{examples_universal.pdf}
+\caption{Twelve representative test inputs for the universal autoencoder: clean target, corrupted input, output with its SSIM, and the absolute error map (every condition appears at least once).}\label{fig:ex1}
+\end{figure*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{failure_universal.pdf}
+\caption{The four lowest-SSIM corrupted test inputs for the universal autoencoder.}\label{fig:fail1}
+\end{figure}
+
+\textbf{Failure cases.} Figure~\ref{fig:fail1} shows the four worst corrupted inputs; all are 35\% occlusions. In the first, a cat on a black background, the mask merges with the background and cuts the animal in two; the network reconstructs a smeared grey-brown shape (SSIM 0.27). In the second, the three rectangles cover the head and back of a dog on grass; the output is a blurred brown-green patch without the animal (0.31). In the third, an L-shaped mask removes the head of a basset hound and the network paints wall and grass texture instead (0.34). In the fourth, two masks cover the body of a brown dog and a third one the top right (0.35). In all four the error is concentrated inside the masks and along the animal's outline: the information is absent, so the best the autoencoder can do is a smooth guess that matches the surroundings; it cannot reconstruct the subject.

@@ -1,0 +1,52 @@
+\section{Application Design, Deployment and Tracking}\label{sec:app}
+
+\subsection{Interface design in Google Stitch}
+The interface was designed first in Google Stitch~\cite{stitch}. The first prompt described four workspaces (one per task) with a sidebar, input and corruption cards, result panels and a system-information area; Stitch returned four screens and a design system (indigo primary colour, Inter for text and JetBrains Mono for numbers, white rounded cards on a light background). Using the first screens, a usability problem became clear: the controls and the Run button were below the fold, so the user scrolled down to choose options and back up to see the result. A second prompt asked for a layout in which everything needed for one run fits on a laptop screen: a narrow control panel on the left with the Run button pinned at its bottom, large results on the right, and extra options collapsed. Both rounds are shown in Fig.~\ref{fig:stitch} and kept in the repository (\code{stitch\_design/}, with the exported HTML and \code{DESIGN.md}). The exported HTML is a static mock-up with invented data (a GPU model, LPIPS values, stroke-intensity sliders) that our back end cannot provide, so we took its structure, colours and typography and implemented it as React components that show only real data. One exported screen of the second round (sketch workspace) was empty, which is stated in the figure. \todo{Add your own screenshots of the Stitch project page (prompt history) here or in the appendix as evidence of the original design.}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{stitch_montage.pdf}
+\caption{Google Stitch designs: first prompt (top) and layout revision (bottom).}\label{fig:stitch}
+\end{figure*}
+
+\subsection{Front end}
+The front end is a React~18 single-page application built with Vite and styled with Tailwind CSS. The four workspaces (Universal Restoration, Hard-Routed Restoration, Soft Mixture-of-Experts Restoration, Face-to-Sketch Generator) share one layout (Fig.~\ref{fig:screens}). The user supplies an image by upload (or drag and drop), by choosing one of ten built-in test samples, or --- for sketches --- by webcam capture; chooses a corruption type and severity (low, medium, high or custom sliders and a random seed, so the same seed reproduces the same corruption) or leaves the image as is to restore an already corrupted upload; and presses Run. The result panels show the model input, the restored output and the absolute error map (when a clean reference exists), each with a PNG download, together with the information the assignment asks for: the inference time; for hard routing, the four classifier probabilities, the predicted corruption, the selected expert, a confidence value and the routing mode (predicted or oracle); for the mixture, the four routing weights, a stacked contribution bar, the dominant branch and the weight entropy; and for sketches, the style, side-by-side photograph and sketch with a download button. A measurement with a real browser showed that at $1366\times768$ and $1920\times1080$ pixels the Run button is always visible and the page never scrolls.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.49\textwidth]{app_universal.png}\hfill
+\includegraphics[width=0.49\textwidth]{app_hard.png}\\[2pt]
+\includegraphics[width=0.49\textwidth]{app_soft.png}\hfill
+\includegraphics[width=0.49\textwidth]{app_sketch.png}
+\caption{Screenshots of the deployed application (1366$\times$768): universal restoration, hard-routed restoration, soft mixture-of-experts restoration and the face-to-sketch generator, each after a run on a built-in sample.}\label{fig:screens}
+\end{figure*}
+
+\subsection{Back end}
+The FastAPI~\cite{fastapi} service loads all seven ONNX models once at start-up and exposes: \code{GET /api/health} (model status, runtime and device), \code{GET /api/samples}, \code{POST /api/restore/universal}, \code{/restore/hard}, \code{/restore/soft} and \code{POST /api/sketch}. Every image endpoint validates the upload (allowed content types, at most 10~MB and 40~megapixels, decodable image, path-traversal-safe sample names, style in $\{1,2,3\}$, allowed corruption and slider ranges), preprocesses it exactly as in training (bicubic resize to $128\times128$; for sketches an optional centre crop, padding or stretch), applies the requested corruption with a NumPy port of the training corruption code (checked against it by an automated test), runs the model(s) with ONNX Runtime on the CPU, and returns PNG data URLs together with the routing information, timings and, when a clean reference exists, PSNR before and after and an error map. A missing model file produces a clear 503 message and a warning in the interface instead of a crash.
+
+\begin{table}[t]
+\centering
+\caption{ONNX export and verification: file size and maximum absolute difference between PyTorch and ONNX Runtime outputs on a random batch (checked by the export scripts); typical single-image CPU latency.}\label{tab:onnx}
+\small
+\adjustbox{max width=\columnwidth}{\input{generated/tab_onnx.tex}}
+\end{table}
+
+\subsection{ONNX export and verification}
+All models needed for inference were exported to ONNX (opset 17, dynamic batch) by \code{src/export/*}; each export is checked with the ONNX checker and compared with the PyTorch output on a random batch, and must agree within an absolute tolerance of $10^{-4}$ ($10^{-3}$ for the generator); the observed differences are all below $2.1\times10^{-6}$ (Table~\ref{tab:onnx}). The whole soft mixture (gate, three experts, identity and mixing) is one ONNX graph that returns both the image and the four weights; only the generator of the cGAN is exported. Beyond the per-model check, we re-measured the published test results using only the deployed artefacts: the ONNX files, the back end's NumPy corruptions and a different SSIM implementation (scikit-image). The SSIM values of the universal and mixture models agreed with the PyTorch evaluation to four decimals on the first 300 test entries, and the classifier accuracy on the full first manifest was identical (0.9910).
+
+\subsection{Containerised deployment}
+Two containers are built from the repository: the back end (Python, FastAPI, ONNX Runtime) and the front end (an nginx image serving the built application and proxying \code{/api} to the back end). The model files are mounted read-only from \code{./onnx\_models}; they are not stored in Git, and \code{scripts/download\_models.py} fetches them from the release assets of the repository. One command,
+\begin{verbatim}
+docker compose up --build
+\end{verbatim}
+starts the application at \code{http://localhost:3000}; the back end has a health check, and an optional profile starts the MLflow interface on port 5000. An end-to-end smoke test (\code{scripts/smoke\_test\_stack.py}) exercises every endpoint, corruption, severity, routing mode, framing option and error path through the nginx address, as a browser would (54 checks), and the back end has its own 38 automated tests.
+
+\subsection{Experiment tracking}
+Training runs, Optuna trials, hyper-parameters, per-epoch losses and metrics, the best checkpoints and visual outputs (for Task~4 the fixed-photo sample grids every ten epochs) are recorded with MLflow~\cite{mlflow} in five experiments: the universal autoencoder, the classifier, the specialists, the mixture and the cGAN. The MLflow database and the Optuna SQLite studies are part of the repository, so the records can be opened without retraining (Fig.~\ref{fig:mlflow}). Checkpoint files are not stored in Git because of their size. \todo{Optionally add your own MLflow screenshots if you prefer them to the automatically captured ones.}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.49\textwidth]{mlflow_experiments.png}\hfill
+\includegraphics[width=0.49\textwidth]{mlflow_run.png}
+\caption{MLflow interface: the experiments with their runs (left) and the metrics of one training run (right).}\label{fig:mlflow}
+\end{figure*}

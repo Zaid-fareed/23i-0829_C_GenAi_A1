@@ -1,0 +1,42 @@
+\section{Hyper-parameter Optimisation with Optuna}\label{sec:optuna}
+Every task has its own Optuna study (TPE sampler, seed 42, studies stored in SQLite under \code{optuna\_studies/}, every trial also logged to MLflow). Trials are deliberately short and use sub-samples of the training data so that the search is affordable; the selected configuration is then retrained on all training data for the full schedule. Table~\ref{tab:space} lists the complete search spaces, Table~\ref{tab:optuna} the number of completed and pruned trials and the best trial of each study, Table~\ref{tab:selected} the final configurations, and Fig.~\ref{fig:optuna} the study histories. Pruning (median rule) stopped poorly performing trials early in Tasks 1, 2 (classifier), 3 and 4; the shared specialist search is not pruned because each trial trains three models and offers no single intermediate value.
+
+\begin{table*}[t]
+\centering
+\caption{Complete Optuna search spaces (log = log-uniform, U = uniform, $\{\cdot\}$ = categorical). Channel options c16, c32, c48 denote the four-stage widths $(16,32,64,128)$, $(32,64,128,256)$ and $(48,96,192,384)$.}\label{tab:space}
+\small
+\begin{tabular}{p{2.9cm}p{9.0cm}p{4.5cm}}
+\toprule
+Study & Searched parameters & Trial budget and objective \\
+\midrule
+Task 1 (final) & lr log$[3\text{e-}4,3\text{e-}3]$; batch $\{16,32,64\}$; latent channels $\{32,64,128,256\}$; channels $\{$c16, c32, c48$\}$; dropout U$[0,0.15]$; $\alpha$ U$[0.2,0.95]$ & 12 trials $\times$ 6 epochs on 1,000 images; validation $0.5\mathcal{L}_1+0.5(1-\mathrm{SSIM})$ \\
+Task 1 (first) & as above but dropout U$[0,0.3]$ and latent channels $\{16,32,64,128\}$ & 8 trials $\times$ 3 epochs on 600 images \\
+Task 2 classifier & lr log$[3\text{e-}4,3\text{e-}3]$; batch $\{16,32,64\}$; channels $\{$c16, c32, c48$\}$; dropout U$[0,0.5]$; weight decay log$[10^{-6},10^{-2}]$ & 8 trials $\times$ 4 epochs on 1,000 images; validation macro-F1 (maximised) \\
+Task 2 specialists & as Task 1; $\alpha$ U$[0.2,0.95]$ (first run) and U$[0.55,0.95]$ (final run) & 8 trials, each training all three specialists for 6 epochs on 1,000 images; mean validation objective \\
+Task 3 & joint lr log$[10^{-5},5\text{e-}4]$; temperature $\tau$ log$[0.3,3]$; $\lambda_c$ log$[0.01,2]$; $\lambda_b$ U$[0,2]$; $\alpha$ U$[0.2,0.95]$ (first) and U$[0.55,0.95]$ (final) & 8 trials $\times$ (1 warm-up + 3 joint epochs) on 1,000 images; validation objective \\
+Task 4 & $\mathrm{lr}_G$, $\mathrm{lr}_D$ log$[5\text{e-}5,10^{-3}]$; batch $\{8,16,32\}$; base channels $\{32,48,64\}$; dropout U$[0,0.5]$; embedding size $\{8,16,32\}$; $\lambda_{L1}$ log$[10,200]$ & 8 trials $\times$ 15 epochs on all 899 pairs; validation $0.5\,\mathrm{L1}+0.5(1-\mathrm{SSIM})$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{Optuna studies: trials, completed and pruned counts, best trial (studies marked ``first'' or ``rejected'' are kept as evidence).}\label{tab:optuna}
+\small
+\adjustbox{max width=\columnwidth}{\input{generated/tab_optuna_counts.tex}}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Selected configuration of each model.}\label{tab:selected}
+\small
+\adjustbox{max width=\columnwidth}{\input{generated/tab_selected.tex}}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{optuna_overview.pdf}
+\caption{Optuna studies of the final configurations: objective value of completed trials (dots), best value so far (line) and pruned trials (crosses along the bottom).}\label{fig:optuna}
+\end{figure*}
+
+Three search-related lessons are worth recording. First, short trials favour configurations that learn fast early, which is how the first Task~1 search selected a high dropout rate that later under-fitted (Section~\ref{sec:t1}). Second, an objective made of L1 and SSIM cannot see colour loss, so the first specialist search selected an SSIM-heavy $\alpha$ that later discarded colour (Section~\ref{sec:colour}); constraining a parameter range after inspecting outputs is legitimate only when it is reported, as it is here. Third, with 8--12 trials per study the searches are compact: they find good, not optimal, settings.

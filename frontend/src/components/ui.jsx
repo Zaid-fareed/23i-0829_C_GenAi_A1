@@ -20,9 +20,9 @@ export const Section = ({ n, title, tag, children }) => (
 );
 
 export const Card = ({ title, right, children, className = "" }) => (
-  <section className={`rounded-xl border border-slate-200 bg-white p-4 ${className}`}>
+  <section className={`rounded-xl border border-slate-200 bg-white p-3 ${className}`}>
     {(title || right) && (
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">{title}</h3>
         {right}
       </div>
@@ -92,7 +92,7 @@ export const Pill = ({ tone = "ok", pulse = false, children }) => (
 
 /** Compact info tile for the metrics strip. */
 export const Stat = ({ label, value, hint }) => (
-  <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+  <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50 px-3 py-1.5">
     <div className="font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500">{label}</div>
     <div className="mt-0.5 break-words font-mono text-[15px] font-semibold leading-tight text-slate-900">{value}</div>
     {hint && <div className="mt-0.5 font-mono text-[11px] leading-tight text-slate-400">{hint}</div>}
@@ -120,11 +120,11 @@ export const ImagePanel = ({ index, title, src, filename, badge, hint = "Run the
 );
 
 /** Probability / weight rows. `selected` (key) gets the highlighted treatment. */
-export const WeightBars = ({ data, selected, selectedLabel = "Selected" }) => {
+export const WeightBars = ({ data, selected, selectedLabel = "Selected", cols = 1 }) => {
   const entries = Object.entries(data);
   const max = Math.max(...entries.map(([, v]) => v));
   return (
-    <ul className="space-y-1">
+    <ul className={cols === 2 ? "grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2" : "space-y-1"}>
       {entries.map(([k, v]) => {
         const top = selected ? k === selected : v === max;
         return (

@@ -1,0 +1,20 @@
+\begin{tabular}{llcccrr}
+\toprule
+ & & \multicolumn{3}{c}{SSIM} & \multicolumn{2}{c}{soft MoE} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-7}
+Corruption & Level & universal & hard (pred.) & soft MoE & L1 & PSNR (dB) \\
+\midrule
+clean & -- & 0.814 & 0.996 & 0.991$\pm$0.017 & 0.0081 & 40.19 \\
+salt-and-pepper & low & 0.813 & 0.796 & 0.807$\pm$0.070 & 0.0427 & 24.98 \\
+salt-and-pepper & medium & 0.808 & 0.794 & 0.795$\pm$0.075 & 0.0436 & 24.83 \\
+salt-and-pepper & high & 0.796 & 0.790 & 0.778$\pm$0.075 & 0.0441 & 24.71 \\
+Gaussian blur & low & 0.814 & 0.792 & 0.820$\pm$0.074 & 0.0400 & 25.55 \\
+Gaussian blur & medium & 0.805 & 0.790 & 0.795$\pm$0.086 & 0.0424 & 25.04 \\
+Gaussian blur & high & 0.751 & 0.757 & 0.754$\pm$0.096 & 0.0448 & 24.49 \\
+occlusion & low & 0.768 & 0.747 & 0.771$\pm$0.083 & 0.0484 & 22.78 \\
+occlusion & medium & 0.718 & 0.699 & 0.699$\pm$0.093 & 0.0575 & 21.28 \\
+occlusion & high & 0.634 & 0.625 & 0.621$\pm$0.098 & 0.0718 & 19.16 \\
+\midrule
+all (36,690) & & 0.772 & 0.779 & 0.783$\pm$0.120 & 0.0443 & 25.30 \\
+\bottomrule
+\end{tabular}

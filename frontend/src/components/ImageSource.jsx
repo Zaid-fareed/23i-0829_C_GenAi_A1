@@ -68,7 +68,7 @@ export default function ImageSource({ value, onChange, webcam = false, sampleFil
 
       {tab === "sample" && (
         shown.length ? (
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="grid grid-cols-6 gap-1.5">
             {shown.map((s) => (
               <button key={s} title={s} onClick={() => onChange({ file: null, sample: s, previewUrl: `/api/samples/${s}`, name: s })}
                 className={`aspect-square overflow-hidden rounded-lg border-2 ${value.sample === s ? "border-brand-600" : "border-transparent hover:border-slate-300"}`}>
@@ -91,7 +91,7 @@ export default function ImageSource({ value, onChange, webcam = false, sampleFil
         </div>
       )}
 
-      {value.previewUrl && (
+      {value.file && value.previewUrl && (  /* samples are highlighted in the grid; only uploads/webcam need a preview row */
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
           <img src={value.previewUrl} alt="selected" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
           <div className="min-w-0">
