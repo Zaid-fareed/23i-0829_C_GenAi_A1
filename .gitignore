@@ -35,3 +35,7 @@ onnx_models_v2/
 onnx_models_dummy/
 logs/
 !report/Report_Assignment1_latex.zip
+
+# personal notes (kept locally, not part of the repository)
+/docs/SUBMISSION_CHECKLIST.md
+/docs/DEMO_SCRIPT.md

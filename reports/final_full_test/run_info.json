@@ -48,7 +48,7 @@
     }
   },
   "n_entries": 9170,
-  "onnx_dir": "C:\\Users\\DEll\\Desktop\\Semester 7\\Gen AI\\assignments\\1\\genai-assignment1\\onnx_models",
+  "onnx_dir": "onnx_models",
   "models": {
     "t1": "task1_universal_dae.onnx",
     "clf": "task2_classifier.onnx",
