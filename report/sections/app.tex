@@ -1,12 +1,18 @@
 \section{Application Design, Deployment and Tracking}\label{sec:app}
 
 \subsection{Interface design in Google Stitch}
-The interface was designed first in Google Stitch~\cite{stitch}. The first prompt described four workspaces (one per task) with a sidebar, input and corruption cards, result panels and a system-information area; Stitch returned four screens and a design system (indigo primary colour, Inter for text and JetBrains Mono for numbers, white rounded cards on a light background). Using the first screens, a usability problem became clear: the controls and the Run button were below the fold, so the user scrolled down to choose options and back up to see the result. A second prompt asked for a layout in which everything needed for one run fits on a laptop screen: a narrow control panel on the left with the Run button pinned at its bottom, large results on the right, and extra options collapsed. Both rounds are shown in Fig.~\ref{fig:stitch} and kept in the repository (\code{stitch\_design/}, with the exported HTML and \code{DESIGN.md}). The exported HTML is a static mock-up with invented data (a GPU model, LPIPS values, stroke-intensity sliders) that our back end cannot provide, so we took its structure, colours and typography and implemented it as React components that show only real data. One exported screen of the second round (sketch workspace) was empty, which is stated in the figure. \todo{Add your own screenshots of the Stitch project page (prompt history) here or in the appendix as evidence of the original design.}
+The interface was designed first in Google Stitch~\cite{stitch}. The first prompt described four workspaces (one per task) with a sidebar, input and corruption cards, result panels and a system-information area; Stitch returned four screens and a design system (indigo primary colour, Inter for text and JetBrains Mono for numbers, white rounded cards on a light background). Using the first screens, a usability problem became clear: the controls and the Run button were below the fold, so the user scrolled down to choose options and back up to see the result. A second prompt asked for a layout in which everything needed for one run fits on a laptop screen: a narrow control panel on the left with the Run button pinned at its bottom, large results on the right, and extra options collapsed. Both rounds are shown in Fig.~\ref{fig:stitch} and kept in the repository (\code{stitch\_design/}, with the exported HTML and \code{DESIGN.md}). The exported HTML is a static mock-up with invented data (a GPU model, LPIPS values, stroke-intensity sliders) that our back end cannot provide, so we took its structure, colours and typography and implemented it as React components that show only real data. One exported screen of the second round (sketch workspace) was empty, which is stated in the figure. A screenshot of the Stitch project page itself, with the generated screens of both rounds on the canvas and the prompt history on the left, is shown in Fig.~\ref{fig:stitchproject}; the wording of the prompts is kept in \code{stitch\_design/PROMPTS.md}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{stitch_montage.pdf}
 \caption{Google Stitch designs: first prompt (top) and layout revision (bottom).}\label{fig:stitch}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{stitch_project.png}
+\caption{The Google Stitch project page: the screens of both design rounds on the canvas and the list of prompts on the left.}\label{fig:stitchproject}
 \end{figure*}
 
 \subsection{Front end}
