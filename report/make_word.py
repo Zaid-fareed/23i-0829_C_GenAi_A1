@@ -137,7 +137,7 @@ def build_sources():
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\repo}{\url{https://github.com/Zaid-fareed/23i-0829_C_GenAi_A1}}
 \title{%s}
-\author{Zaid Fareed \\ Roll No.\ 23I-0829, Section C --- Generative AI, Assignment 1 \\ Source code: \repo \\ Demonstration video: \textbf{[TO DO: paste the YouTube link here]}}
+\author{Zaid Fareed \\ Roll No.\ 23I-0829, Section C --- Generative AI, Assignment 1 \\ Source code: \repo \\ Demonstration video: \url{https://youtu.be/xUows4eME8M}}
 \date{}
 \begin{document}
 \maketitle

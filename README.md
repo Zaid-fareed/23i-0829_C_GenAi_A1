@@ -6,7 +6,7 @@ by a FastAPI + React/Tailwind web application in Docker.
 
 * **Technical report (IEEE format):** [`report/main.pdf`](report/main.pdf) - LaTeX source in `report/`
   (Overleaf package: `report/Report_Assignment1_latex.zip`) - Word version: `report/Report_Assignment1.docx`
-* **Demonstration video:** _add the YouTube link here_
+* **Demonstration video:** <https://youtu.be/xUows4eME8M>
 * **Trained ONNX models:** attached to the GitHub release `models-v1` of this repository (see step 2 below)
 
 ## Results at a glance (test set, 36,690 deterministic inputs = 3,669 images x 10 conditions)
