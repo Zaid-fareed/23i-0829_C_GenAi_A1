@@ -1,20 +1,17 @@
 \section{AI-Use Statement}\label{app:ai}
-The assignment permits AI assistants provided their use is disclosed and their output is verified. This appendix identifies the tools, the tasks and how the output was tested or corrected. \todo{Author: read this appendix and change anything that does not describe exactly what you did; add the prompts you personally wrote.}
+AI assistants were used for this assignment and are disclosed here with the tasks they supported and how their output was checked.
 
-\subsection{Tools and the tasks they were used for}
+\subsection{Tools and tasks}
 \begin{itemize}
-\item \textbf{Claude (web chat, Anthropic).} Produced the initial project prompt and the first code base for Tasks~1--3 (data pipeline, corruption code, models, losses, training and Optuna scripts, evaluation and ONNX export scripts).
-\item \textbf{Claude Code (coding assistant, Anthropic).} Integrated and debugged that code base; wrote the Task~4 cGAN code; wrote the FastAPI back end, the React/Tailwind front end, the Docker set-up, the Kaggle instructions, the verification and screenshot scripts, the report generation scripts and a draft of this report; ran tests and measurements.
-\item \textbf{Google Stitch.} Generated the interface design from two prompts (Sec.~\ref{sec:app}); its exported HTML was used as a structural reference, not as the final code.
-\item \textbf{Kaggle notebooks (T4 GPU).} Compute for all training runs.
-\item \textbf{Libraries.} PyTorch, Optuna, MLflow, ONNX and ONNX Runtime, scikit-learn, scikit-image, FastAPI, React, Tailwind CSS, Vite, nginx and Docker.
+\item \textbf{Claude (web chat, Anthropic):} wrote the initial project prompt and a first code base for Tasks~1--3 (data pipeline, corruptions, models, losses, Optuna and training scripts, evaluation and ONNX export scripts).
+\item \textbf{Claude Code (Anthropic):} integrated and debugged that code, wrote the Task~4 cGAN, the FastAPI back end, the React/Tailwind front end, the Docker set-up, the Kaggle instructions, the evaluation, figure and table scripts, and a draft of this report, which was then revised and shortened at my request.
+\item \textbf{Google Stitch:} generated the interface design from two prompts (Section~\ref{sec:app}); its HTML was a structural reference only.
+\item \textbf{Kaggle notebooks (T4 GPU)} for all training; standard libraries (PyTorch, Optuna, MLflow, ONNX Runtime, FastAPI, React, Tailwind, Docker).
 \end{itemize}
 
-\subsection{How the output was tested or corrected}
+\subsection{Testing and corrections}
 \begin{itemize}
-\item \textbf{Automated tests.} Corruption determinism and exact pixel counts, balanced batches, manifest reproducibility, resume-from-checkpoint equivalence (a simulated crash resumes to the same weights), equality of the back end's NumPy corruptions with the training code, 38 back-end API tests, and a 54-check end-to-end test of the running application.
-\item \textbf{Numerical verification.} Every ONNX export was compared with PyTorch (differences $\le2\times10^{-6}$), and the published test results were independently re-measured from the ONNX files alone with a different SSIM implementation.
-\item \textbf{Corrections made after inspecting results.} The first universal autoencoder under-fitted (SSIM \nAttemptOneSSIM{}) and was retrained with a corrected search space; the first specialists lost half the colour because Optuna chose an SSIM-heavy loss weight, which a colourfulness measurement revealed, and they were retrained with a restricted range; a second cGAN recipe was measured and rejected; stretching non-square photographs distorted sketches, so a crop option was added; the test manifest was regenerated so that each test image has all ten conditions as the assignment requires; a version-control ignore rule that silently excluded the data package was found and fixed.
-\item \textbf{Claims checked against data.} Memorisation was examined by comparing training and validation scores; that final models used all training data was confirmed from the MLflow run parameters; that the test set is loaded only by the evaluation scripts was confirmed by searching the code; the layout claim (no scrolling, Run button visible) was measured in a real browser.
-\item \textbf{Every number in the report} tables and in the text is generated from saved result files by scripts in \code{report/}; references were written from the cited papers' bibliographic data and should be checked against the originals.
+\item \textbf{My own manual testing drove the main changes.} I ran the training on Kaggle and inspected the outputs and the application myself. Noticing that the first training run was suspiciously fast and its output poor led to the diagnosis and retraining of the autoencoder (Section~\ref{sec:t1}); noticing washed-out colours in the specialists' outputs led to the colourfulness measurement, the restricted loss-weight range and the retraining of the specialists and mixture (Section~\ref{sec:t2}); my concern about how non-square photographs were framed for sketches led to a test and to a crop option; and the first Stitch interface was hard to use (scrolling between options and results), which led to the second Stitch prompt and the revised layout.
+\item \textbf{Automated checks} written with the coding assistant supported this work: tests of corruption determinism and pixel counts, balanced batches, resume-from-checkpoint, the application's endpoints (38 unit tests and a 54-check smoke test), and ONNX-versus-PyTorch comparison of every export (differences $\le2.1\times10^{-6}$). They supplement my manual testing and do not replace it.
+\item \textbf{Numbers and references.} Every table value in this report is generated from saved result files by the scripts in \code{report/}. The bibliographic details of the references were checked against the publishers' or arXiv records.
 \end{itemize}

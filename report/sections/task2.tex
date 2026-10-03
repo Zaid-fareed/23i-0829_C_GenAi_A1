@@ -1,101 +1,66 @@
-\section{Task 2: Corruption Classification and Hard-Routed Specialists}\label{sec:t2}
+\section{Task 2: Classification and Hard-Routed Specialists}\label{sec:t2}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{arch_task2_task3.pdf}
-\caption{Top: hard routing (Task~2). A classifier chooses the corruption class $r$, which selects a specialist or the identity bypass. Bottom: the soft mixture of experts (Task~3), built from the same components.}\label{fig:arch23}
+\includegraphics[width=0.6\textwidth]{arch_task2_task3.pdf}
+\caption{Top: hard routing (Task~2); the classifier output $r$ selects a specialist or the identity bypass. Bottom: the soft mixture of experts (Task~3) built from the same components.}\label{fig:arch23}
 \end{figure*}
 
-\subsection{Corruption classifier}
-\textbf{Architecture and training.} The classifier maps $\tilde{x}$ to $p=[p_{clean},p_{salt},p_{blur},p_{occ}]$. It has four stride-2 stages of two $3\times3$ convolutions (16, 32, 64, 128 channels, batch norm, ReLU, light Dropout2d), global average pooling, dropout and a linear layer; it has only 0.295\,M parameters. The predicted class is $r=\arg\max_k p_k$. Training minimises the multiclass cross-entropy, and every batch is \emph{exactly balanced}: a batch of size $B$ contains $B/4$ clean, salt-and-pepper, blur and occlusion items, with labels taken from the runtime corruption pipeline. Optuna tuned the learning rate, batch size, channel configuration, dropout and weight decay (objective: validation macro-F1); the selected values are learning rate $1.5\times10^{-3}$, batch 32, dropout 0.15 and weight decay $1.3\times10^{-4}$, trained for 30 epochs.
-
-\textbf{Results.} On the full test protocol ($\nNEntries{}$ inputs) the classifier has accuracy \nClfAcc{} and macro-F1 \nClfMacroF{} (Table~\ref{tab:classifier}, Fig.~\ref{fig:cm}). Salt-and-pepper noise is recognised perfectly, because isolated black and white pixels are unmistakable. The \nMisrouteCount{} errors (\nMisroute\%) fall into two groups (Table~\ref{tab:misroute}): clean images taken for blurred or occluded ones, and low-severity occlusions taken for clean images. A 10\% occlusion can hide in a dark image, and a clean photograph with large uniform dark areas resembles a masked one. Because the classes are imbalanced in the full protocol (clean has a third of the support of each corruption), macro averages are reported next to the accuracy.
+\textbf{Classifier.} Four stride-2 stages of two $3\times3$ convolutions (16--128 channels, batch norm, ReLU, Dropout2d), global average pooling, dropout and a linear layer give $p=[p_{clean},p_{salt},p_{blur},p_{occ}]$ with 0.295\,M parameters and $r=\arg\max_k p_k$. It is trained with multiclass cross-entropy on exactly balanced batches; Optuna tuned learning rate, batch size, channel configuration, dropout and weight decay (objective: validation macro-F1), selecting learning rate $1.5\times10^{-3}$, batch 32, dropout 0.15, weight decay $1.3\times10^{-4}$, 30 epochs. On the test protocol it reaches accuracy \nClfAcc{} and macro-F1 \nClfMacroF{} (Table~\ref{tab:classifier}, Fig.~\ref{fig:cm}). Salt-and-pepper is recognised perfectly; the \nMisrouteCount{} errors (\nMisroute\%) are clean images taken for blurred or occluded ones, and low-severity occlusions taken for clean images.
 
 \begin{table}[t]
 \centering
-\caption{Classifier metrics on the full test protocol.}\label{tab:classifier}
+\caption{Classifier metrics on the test protocol.}\label{tab:classifier}
 \small
 \adjustbox{max width=\columnwidth}{\input{generated/tab_classifier.tex}}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.88\columnwidth]{confusion_matrix.pdf}
-\caption{Row-normalised four-class confusion matrix of the corruption classifier.}\label{fig:cm}
+\includegraphics[width=0.75\columnwidth]{confusion_matrix.pdf}
+\caption{Row-normalised confusion matrix of the classifier.}\label{fig:cm}
 \end{figure}
 
-\subsection{Specialist autoencoders}
-\textbf{Design.} Three specialists $A_{salt}$, $A_{blur}$, $A_{occ}$ share the architecture of the Task~1 autoencoder (channels 48--384, bottleneck 32, 4.01\,M parameters each) but have independently trained parameters, and each is trained only on its own corruption with the same clean target. Following the assignment's allowance for feasibility, one \emph{shared} Optuna search selects a common architecture: each trial trains all three specialists for six epochs on 1,000 images and scores the mean validation objective; learning rate, latent size, channels, batch size, dropout and $\alpha$ are tuned. The three specialists are then trained independently for 100 epochs on the full training set (learning rate $6.8\times10^{-4}$, batch 32, dropout 0.07, $\alpha=0.60$).
-
-\textbf{Hard-routed inference.} The restored image is
+\textbf{Specialists.} Three autoencoders $A_{salt}$, $A_{blur}$, $A_{occ}$ share the Task~1 architecture but have independent parameters, each trained only on its own corruption with the same clean target. As the assignment allows, one shared Optuna search (each trial trains all three for six epochs on 1,000 images) selects a common configuration (learning rate $6.8\times10^{-4}$, batch 32, dropout 0.07, $\alpha=0.60$); the specialists are then trained for 100 epochs. Inference is
 \begin{equation}
-\hat{x}=\begin{cases}
-\tilde{x}, & r=\text{clean},\\
-A_{salt}(\tilde{x}), & r=\text{salt},\\
-A_{blur}(\tilde{x}), & r=\text{blur},\\
-A_{occ}(\tilde{x}), & r=\text{occlusion},
-\end{cases}
+\hat{x}=\begin{cases}\tilde{x}, & r=\text{clean},\\ A_{salt}(\tilde{x}), & r=\text{salt},\\ A_{blur}(\tilde{x}), & r=\text{blur},\\ A_{occ}(\tilde{x}), & r=\text{occlusion},\end{cases}
 \end{equation}
-so clean inputs take an \emph{identity bypass} and are never processed by an expert. Two modes are evaluated: \emph{oracle} routing uses the true label from the manifest (it measures the specialists alone), \emph{predicted} routing uses the classifier (it measures the deployable system).
+so clean inputs take an identity bypass. \emph{Oracle} routing (true label) measures the specialists; \emph{predicted} routing measures the deployable system.
 
-\subsection{Colour loss and its correction}\label{sec:colour}
-Our first specialists (Optuna chose $\alpha=0.29$, i.e.\ 71\% of the loss on $1-\mathrm{SSIM}$) produced restorations that were visibly washed-out, sepia-toned versions of the input. Measuring colourfulness (mean of the per-pixel maximum minus minimum RGB channel) on \nColourN{} salt-and-pepper test inputs confirmed it: the first salt-and-pepper specialist kept only \nColSpSpecFirst\% of the clean image's colour and the first soft mixture \nColSpMoeFirst\%, whereas the universal autoencoder kept \nColSpUniversal\% (Table~\ref{tab:colour}). SSIM compares local structure and is weakly sensitive to a global chroma shift, so a loss dominated by the SSIM term barely penalises discarding colour; the Optuna objective ($0.5\,\mathcal{L}_1+0.5(1-\mathrm{SSIM})$) did not catch it either. We restricted the $\alpha$ search to $[0.55,0.95]$ and repeated the specialist and mixture training: the final specialist ($\alpha=0.60$) keeps \nColSpSpecFinal\% and the final mixture \nColSpMoeFinal\%. The effect is weaker on occlusion inputs (first specialist \nColOcSpecFirst\%, final specialist \nColOcSpecFinal\%, universal \nColOcUniversal\%, mixtures \nColOcMoeFinal\%), and the final occlusion specialist still keeps slightly less colour than the universal model. Table~\ref{tab:v1v2} shows the side effect on the error measures: the L1 error of the deployed hard-routed system falls by about \nLOneDropPct\% (\nHardPredLOneFirst{} to \nHardPredLOneFinal{}) while SSIM is essentially unchanged, as expected when the loss again weights pixel accuracy. Both runs are kept in the repository (tags without and with \code{\_v2}).
+\textbf{Colour loss and its correction.} The first specialists (Optuna chose $\alpha=0.29$) produced washed-out, sepia-toned images, which we noticed when inspecting the outputs. Colourfulness measured on \nColourN{} salt-and-pepper test inputs confirmed it (Table~\ref{tab:colour}): the first specialist kept \nColSpSpecFirst\% of the colour and the first mixture \nColSpMoeFirst\%, the universal model \nColSpUniversal\%. SSIM is weakly sensitive to a global chroma shift, so neither the loss nor the Optuna objective penalised it. We restricted $\alpha$ to $[0.55,0.95]$ and retrained the specialists and the mixture: the final specialist keeps \nColSpSpecFinal\% and the mixture \nColSpMoeFinal\%; the L1 error of the routed system fell by \nLOneDropPct\% (\nHardPredLOneFirst{} to \nHardPredLOneFinal{}) with SSIM essentially unchanged. The occlusion specialist still keeps slightly less colour than the universal model (\nColOcSpecFinal\% against \nColOcUniversal\%).
 
 \begin{table}[t]
 \centering
-\caption{Colour preserved by each model (colourfulness of the output relative to the clean image) on \nColourN{} salt-and-pepper and \nColourN{} occlusion test inputs.}\label{tab:colour}
+\caption{Colour preserved (colourfulness of the output relative to the clean image) on \nColourN{} salt-and-pepper and occlusion test inputs.}\label{tab:colour}
 \small
 \adjustbox{max width=\columnwidth}{\input{generated/tab_colour.tex}}
 \end{table}
 
-\begin{table}[t]
-\centering
-\caption{First run ($\alpha\approx0.3$) versus final run ($\alpha\ge0.55$) on the single-condition test manifest (3,669 inputs).}\label{tab:v1v2}
-\small
-\adjustbox{max width=\columnwidth}{\input{generated/tab_v1_v2.tex}}
-\end{table}
-
-\subsection{Routing results}
-Table~\ref{tab:routing} compares the corrupted input, the universal autoencoder, oracle routing and predicted routing for each input type. Predicted routing (overall SSIM \nHardPredSSIM{}) is indistinguishable from oracle routing (\nHardOracleSSIM{}) because the classifier is accurate. Its advantage over the universal model (\nTOneSSIMall{}) is small and comes entirely from clean images (SSIM \nHardSSIMclean{} against \nTOneSSIMclean{}, which also raises the PSNR of the clean class far above the 26\,dB of the universal model). On the corrupted types the specialists are \emph{slightly worse} than the universal model in SSIM: \nHardSSIMsaltpepper{} against \nTOneSSIMsaltpepper{} for noise, \nHardSSIMblur{} against \nTOneSSIMblur{} for blur and \nHardSSIMocclusion{} against \nTOneSSIMocclusion{} for occlusion (PSNR: \nHardPSNRsaltpepper{}, \nHardPSNRblur{} and \nHardPSNRocclusion{}\,dB against \nTOnePSNRsaltpepper{}, \nTOnePSNRblur{} and \nTOnePSNRocclusion{}\,dB). A single specialist has the same capacity and the same bottleneck as the universal model, so specialisation brings no extra reconstruction ability; its hyper-parameters were chosen by one shared search for three models, and its batch size (32) gives half as many updates per epoch as the universal model's (16), which may explain part of the small gap. The measured benefit of routing is therefore the identity bypass.
-
 \begin{table*}[t]
 \centering
-\caption{Hard routing (Task~2) on the full test protocol: SSIM and L1 of oracle versus predicted routing, and the share of inputs that the classifier mis-routes.}\label{tab:routing}
+\caption{Hard routing on the test protocol: SSIM and L1 of oracle versus predicted routing, and the share of mis-routed inputs.}\label{tab:routing}
 \small
 \adjustbox{max width=\textwidth}{\input{generated/tab_routing.tex}}
 \end{table*}
 
-\begin{table}[t]
-\centering
-\caption{Classifier errors and their effect: change in SSIM of the predicted route relative to the oracle route for the mis-routed inputs.}\label{tab:misroute}
-\small
-\adjustbox{max width=\columnwidth}{\input{generated/tab_misroute.tex}}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{misroute_hard.pdf}
-\caption{Classifier-induced failures: the four mis-routed inputs with the largest SSIM loss, showing the output of the predicted route next to the oracle route (all four are clean images).}\label{fig:mis}
-\end{figure}
+\textbf{Routing results.} Predicted routing (SSIM \nHardPredSSIM{}) is indistinguishable from oracle routing (\nHardOracleSSIM{}) because the classifier is accurate (Table~\ref{tab:routing}). Its advantage over the universal model (\nTOneSSIMall{}) comes entirely from clean images (\nHardSSIMclean{} against \nTOneSSIMclean{}). On corrupted inputs the specialists are slightly \emph{worse} than the universal model: \nHardSSIMsaltpepper{} against \nTOneSSIMsaltpepper{} for noise, \nHardSSIMblur{} against \nTOneSSIMblur{} for blur and \nHardSSIMocclusion{} against \nTOneSSIMocclusion{} for occlusion. A specialist has the same capacity and bottleneck as the universal model, so specialisation adds no reconstruction ability, and one shared search for three models and a batch of 32 (half the updates per epoch) may explain the small gap. The measured benefit of routing is the identity bypass.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.94\textwidth]{examples_hard.pdf}
-\caption{Twelve representative test inputs for hard-routed restoration (predicted routing).}\label{fig:ex2}
+\includegraphics[width=0.52\textwidth]{examples_hard.pdf}
+\caption{Twelve test inputs for hard-routed restoration (predicted routing).}\label{fig:ex2}
 \end{figure*}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{failure_hard.pdf}
-\caption{The four lowest-SSIM corrupted test inputs under predicted routing.}\label{fig:fail2}
+\includegraphics[width=0.85\columnwidth]{misroute_hard.pdf}
+\caption{Classifier-induced failures: the four mis-routed clean images with the largest SSIM loss; predicted route next to oracle route.}\label{fig:mis}
 \end{figure}
-
-\textbf{Classifier-caused failures.} The mis-routings have opposite consequences (Table~\ref{tab:misroute}). The \nMisClean{} clean images sent to a blur or occlusion expert are real failures: SSIM changes by \nMisCleanLoss{} on average relative to the oracle route ($-0.13$ for those sent to the blur expert, $-0.25$ for those sent to the occlusion expert). In Fig.~\ref{fig:mis} a clean photograph of a dog on grass is taken for blurred and ``restored'' into a brown, smeared scene (SSIM 0.51 instead of 1.00), a photograph with black letterbox bars and a cat on a black background are taken for occluded images and the occlusion expert invents content for the dark regions (0.54, 0.57), and a colourful image is taken for blurred (0.60). The 128 occlusions labelled ``clean'' (126 of them 10\% masks) are left untouched, which scores about $+0.12$ SSIM \emph{higher} than the oracle route, but only because SSIM ignores the untouched black rectangle (Section~\ref{sec:t1}); the hole remains visible, so these are failures of the system even though the metric rewards them. Averaged over all inputs, mis-routing changes the mean SSIM by only $+0.0001$, because the two groups nearly cancel.
-
-\textbf{Other failures.} Figure~\ref{fig:fail2} shows the four lowest-SSIM outputs of the system: as for the universal model they are 35\% occlusions that hide much of the animal (a beagle on grass, a basset hound, a dark terrier, a brown dog among flowers; SSIM 0.28--0.33). They are not routing errors. The specialist fills the hole with a smooth, brownish patch of texture even where the surroundings are green, a mild local colour error consistent with the lower colour retention of the occlusion specialist (Table~\ref{tab:colour}). Training curves of the classifier and of the specialists are in Fig.~\ref{fig:curves2}.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{curves_task2.pdf}
-\caption{Task 2 training curves: classifier loss and accuracy, and validation PSNR of the three specialists in the first run (dotted) and the final run (solid).}\label{fig:curves2}
+\includegraphics[width=0.7\textwidth]{curves_task2.pdf}
+\caption{Task 2 training curves: classifier loss and accuracy, and validation PSNR of the three specialists in the first (dotted) and final (solid) run.}\label{fig:curves2}
 \end{figure*}
+
+\textbf{Classifier-caused failures.} The \nMisClean{} clean images sent to a blur or occlusion expert are real failures (SSIM \nMisCleanLoss{} on average relative to the oracle route). In Fig.~\ref{fig:mis} a clean dog on grass is taken for blurred and ``restored'' into a smeared brown scene (0.51 instead of 1.00), and an image with black letterbox bars and a cat on a black background are taken for occluded, so the occlusion expert invents content for the dark regions (0.54, 0.57). Conversely, 128 occlusions labelled ``clean'' (126 of them 10\% masks) are left untouched; this scores about $+0.12$ SSIM \emph{higher}, but only because SSIM ignores the black rectangle, which stays visible. Overall, mis-routing changes mean SSIM by only $+0.0001$ because the two groups cancel. The four worst outputs of the system are, as for Task~1, 35\% occlusions that hide the animal (SSIM 0.28--0.33); they are not routing errors, and the occlusion specialist fills the hole with a brownish patch even where the surroundings are green.

@@ -34,8 +34,9 @@ onnx_models_v1/
 onnx_models_v2/
 onnx_models_dummy/
 logs/
-!report/Report_Assignment1_latex.zip
+!report/i230829_C_Report_latex.zip
 
 # personal notes (kept locally, not part of the repository)
 /docs/SUBMISSION_CHECKLIST.md
 /docs/DEMO_SCRIPT.md
+/report/main.pdf

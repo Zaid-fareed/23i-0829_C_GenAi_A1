@@ -1,17 +1,11 @@
 \section{Data, Corruption Protocol and Metrics}\label{sec:data}
-\textbf{Oxford-IIIT Pet (Tasks 1--3).} The dataset contains 7,393 images of 37 cat and dog breeds~\cite{parkhi2012}. Following the assignment, the official train/validation collection (3,680 images) was split 80/20 with random seed 42 into \textbf{2,944 training and 736 validation images}; the official 3,669 test images were not used for training or tuning. Category labels are ignored, and all images are converted to RGB and resized directly (bicubic) to $128\times128$. The split is stored once in \code{manifests/pets\_split.json} and reused by all three tasks; the training images are decoded once and kept in memory as \code{uint8} tensors, which is why an epoch takes seconds.
+\textbf{Oxford-IIIT Pet (Tasks 1--3).} The official train/validation collection (3,680 images~\cite{parkhi2012}) was split 80/20 with seed 42 into \textbf{2,944 training and 736 validation images}; the 3,669 official test images were never used for training or tuning. Labels are ignored, images are converted to RGB and resized (bicubic) to $128\times128$; one split file serves all three tasks.
 
-\textbf{Runtime corruption.} No corrupted copy of the data is stored. For every training image that is loaded, one of four conditions is drawn with equal probability and a fresh random specification is sampled (Table~\ref{tab:corruption}). A specification is a plain record that fully describes the corruption (probability and noise seed, kernel and sigma, or rectangle coordinates); the same pure function \code{apply\_spec} applies it during training, validation and testing, and the FastAPI back end contains a NumPy port that our tests compare against the training code. The classifier's balanced batches draw exactly $B/4$ items of each class.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{corruption_grid.pdf}
-\caption{The ten deterministic test conditions for one test image (clean and three fixed severities of each corruption).}\label{fig:corr}
-\end{figure*}
+\textbf{Runtime corruption.} Nothing corrupted is stored. Each time a training image is loaded, one of four conditions (clean, salt-and-pepper, blur, occlusion) is drawn with equal probability and a fresh specification is sampled (Table~\ref{tab:corruption}). The same function applies it in training, validation and testing; the classifier uses exactly balanced batches ($B/4$ per class).
 
 \begin{table*}[t]
 \centering
-\caption{Complete corruption configuration. Training values are re-sampled every time an image is loaded; validation uses the random ranges once with fixed seeds; testing uses the three fixed severities.}\label{tab:corruption}
+\caption{Complete corruption configuration. Training values are re-sampled at every load; validation uses the random ranges once with fixed seeds; testing uses three fixed severities.}\label{tab:corruption}
 \small
 \begin{tabular}{p{2.5cm}p{6.2cm}p{7.4cm}}
 \toprule
@@ -19,14 +13,20 @@ Condition & Training / validation (random) & Fixed test severities (low, medium,
 \midrule
 Clean & original image & original image \\
 Salt-and-pepper & $p\sim U(0.02,0.15)$; exactly $\mathrm{round}(pHW)$ pixels (all channels) set to black or white with equal probability & $p=0.03,\;0.08,\;0.15$ \\
-Gaussian blur & kernel size from $\{3,5,7\}$, $\sigma\sim U(0.5,2.5)$, separable Gaussian with reflect padding & $(k,\sigma)=(3,0.7),\;(5,1.5),\;(7,2.5)$ \\
-Rectangular occlusion & 1--3 black rectangles, union area between 10\% and 35\% of the image, random positions and aspect ratios & 1, 2, 3 rectangles covering 10\%, 20\%, 35\% ($\pm1\%$) \\
+Gaussian blur & kernel $\{3,5,7\}$, $\sigma\sim U(0.5,2.5)$, separable Gaussian, reflect padding & $(k,\sigma)=(3,0.7),\;(5,1.5),\;(7,2.5)$ \\
+Rectangular occlusion & 1--3 black rectangles, union area 10--35\% of the image, random positions and aspect ratios & 1, 2, 3 rectangles covering 10\%, 20\%, 35\% ($\pm1\%$) \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\textbf{Deterministic manifests.} A validation manifest (736 entries, exactly 184 per class) and test manifests are generated once and store, for each entry, the image, corruption type, severity, parameters, mask coordinates and random seed, with a SHA-256 digest. Two test manifests exist. The first (3,669 entries) gives every test image \emph{one} condition and was used by the Kaggle evaluation scripts. The assignment, however, asks that every test image have three fixed severities of every corruption, so the final protocol uses the \textbf{full manifest: each of the 3,669 test images under all ten conditions, 36,690 inputs}. All test tables in this report use the full manifest unless stated otherwise.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{corruption_grid.pdf}
+\caption{The ten deterministic test conditions for one test image (clean and three severities of each corruption).}\label{fig:corr}
+\end{figure*}
 
-\textbf{FS2K (Task 4).} FS2K~\cite{fan2022fs2k} provides 2,104 photo--sketch pairs in three sketch styles. We use the official training and test definitions; 15\% of the official training portion (1,058 pairs) forms a validation set, stratified by style with seed 42, leaving \textbf{899 training and 159 validation pairs}, and the \textbf{1,046 official test pairs} (619, 381 and 46 in styles 1, 2 and 3) are touched only for final evaluation. Photographs are resized to $128\times128$ RGB and sketches to $128\times128$ grayscale. Augmentation (horizontal flip and a random crop-and-resize) uses one random draw applied identically to both members of a pair.
+\textbf{Manifests.} Validation (736 entries, 184 per class) and test manifests are generated once and store the corruption type, severity, parameters, mask coordinates and seed, with a SHA-256 digest. Every test image appears under all ten conditions, giving \textbf{36,690 test inputs} (3,669 images $\times$ 10); all test tables use this full manifest.
 
-\textbf{Metrics.} For restoration we report the mean absolute error (L1, images in $[0,1]$), the structural similarity index SSIM (Gaussian window of 11 pixels, $\sigma=1.5$) and PSNR in dB. PSNR of identical images is infinite, so values are clipped at 60~dB; means over conditions that contain identity-routed images should be read with this in mind. As a reference we always report the ``no restoration'' score of the corrupted input itself, because a restoration model is only useful where it beats that baseline. Classification is evaluated with accuracy, macro-averaged precision, recall and F1, per-class values and a row-normalised confusion matrix.
+\textbf{FS2K (Task 4).} The official training/test definitions are used. 15\% of the training portion is held out as validation, stratified by style with seed 42, leaving \textbf{899 training and 159 validation pairs}; the \textbf{1,046 official test pairs} (619, 381 and 46 in styles 1, 2, 3) are used only for the final evaluation. Photographs are $128\times128$ RGB, sketches $128\times128$ grayscale; augmentation (flip, random crop-and-resize) is applied identically to both members of a pair.
+
+\textbf{Metrics.} L1 (images in $[0,1]$), SSIM (11-pixel Gaussian window) and PSNR in dB, clipped at 60\,dB because identical images give infinite PSNR. The score of the untouched corrupted input (``no restoration'') is always shown, since a restoration model is useful only where it beats it. Classification uses accuracy, macro precision/recall/F1, per-class values and a row-normalised confusion matrix.

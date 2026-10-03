@@ -1,6 +1,6 @@
 """Build the Word version of the report from the SAME LaTeX sources (so the two versions cannot disagree).
 
-  python report/make_word.py        -> report/Report_Assignment1.docx
+  python report/make_word.py        -> report/i230829_C_Report.docx
 
 Pipeline: read figure/table/section numbers from the LaTeX build (main.aux) -> copy the sources to report/_word and
 resolve references, captions and wide-table wrappers -> convert PDF figures to PNG -> Pandoc (LaTeX to DOCX, IEEE
@@ -22,7 +22,7 @@ from docx.shared import Cm, Pt
 
 HERE = Path(__file__).resolve().parent
 TMP = HERE / "_word"
-OUT = HERE / "Report_Assignment1.docx"
+OUT = HERE / "i230829_C_Report.docx"
 ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100}
 
 
@@ -147,7 +147,7 @@ def build_sources():
 \noindent\textbf{Index Terms:} %s
 
 """ % (title, re.sub(r"\\todo\{", r"\\textbf{[TO DO: ", abstract), keywords)
-    for sec in ("intro", "related", "data", "task1", "task2", "task3", "task4", "optuna", "app", "limits", "appendix_ai", "appendix_repro"):
+    for sec in ("intro", "related", "data", "task1", "task2", "task3", "task4", "optuna", "app", "limits", "appendix_ai"):
         tex += f"\\input{{sections/{sec}}}\n\n"
     tex += "\\end{document}\n"
     (TMP / "main_word.tex").write_text(tex, encoding="utf-8")

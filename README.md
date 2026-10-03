@@ -4,8 +4,8 @@ Image restoration on the Oxford-IIIT Pet dataset with three architectures (unive
 specialists, soft mixture-of-experts) and style-conditioned face-to-sketch synthesis with a cGAN on FS2K, all served
 by a FastAPI + React/Tailwind web application in Docker.
 
-* **Technical report (IEEE format):** [`report/main.pdf`](report/main.pdf) - LaTeX source in `report/`
-  (Overleaf package: `report/Report_Assignment1_latex.zip`) - Word version: `report/Report_Assignment1.docx`
+* **Technical report (IEEE format):** [`report/i230829_C_Report.pdf`](report/i230829_C_Report.pdf) - LaTeX source in `report/`
+  (Overleaf package: `report/i230829_C_Report_latex.zip`) - Word version: `report/i230829_C_Report.docx`
 * **Demonstration video:** <https://youtu.be/xUows4eME8M>
 * **Trained ONNX models:** attached to the GitHub release `models-v1` of this repository (see step 2 below)
 

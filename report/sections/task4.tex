@@ -1,75 +1,50 @@
 \section{Task 4: Style-Conditioned Face-to-Sketch cGAN}\label{sec:t4}
-
-\subsection{Model}
-The generator $\hat{y}=G(x,s)$ (Fig.~\ref{fig:arch4}) is a U-Net~\cite{ronneberger2015}: seven stride-2 encoder blocks (64, 128, 256, 512 channels, four times 512 at the deepest levels) reduce the $128\times128$ photograph to a $1\times1$ code, and six transposed-convolution blocks with skip connections restore the resolution; a final transposed convolution with tanh produces a one-channel sketch. The first three decoder blocks use dropout (0.30). The style $s\in\{1,2,3\}$ is a \emph{learned categorical embedding} (three vectors of 32 values). It is incorporated into the generator twice, broadcast over the image as extra input channels and concatenated to the $1\times1$ bottleneck, and into the discriminator as extra input channels; it is therefore part of the model and not merely an interface label. The generator has 42.1\,M parameters. The discriminator is a PatchGAN~\cite{isola2017,li2016mgan}: it receives the photograph, the style map and either the real or the generated sketch (36 channels), and outputs a $14\times14$ map of patch logits (2.8\,M parameters).
+\textbf{Model.} The generator $\hat{y}=G(x,s)$ is a U-Net~\cite{ronneberger2015}: seven stride-2 encoder blocks (64--512 channels) reduce the $128\times128$ photograph to a $1\times1$ code, six transposed-convolution blocks with skip connections restore the resolution, and a final tanh layer gives a one-channel sketch (dropout 0.30 in the first three decoder blocks, 42.1\,M parameters, Fig.~\ref{fig:arch4}). The style $s\in\{1,2,3\}$ is a \emph{learned categorical embedding} (three vectors of 32 values) that enters the generator twice, as extra input channels and concatenated to the bottleneck, and the discriminator as extra input channels, so it is part of the model and not an interface label. The PatchGAN discriminator~\cite{isola2017} receives photograph, style map and a real or generated sketch and outputs a $14\times14$ map of patch logits (2.8\,M parameters).
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{arch_task4.pdf}
-\caption{Style-conditioned cGAN: U-Net generator with a style embedding in the input and the bottleneck, and PatchGAN discriminator.}\label{fig:arch4}
+\includegraphics[width=0.58\textwidth]{arch_task4.pdf}
+\caption{Style-conditioned cGAN: U-Net generator with a style embedding in the input and bottleneck, and PatchGAN discriminator.}\label{fig:arch4}
 \end{figure*}
 
-\subsection{Losses and training}
-The discriminator is trained with binary cross-entropy on logits to label real pairs $(x,y,s)$ as one and generated pairs $(x,G(x,s),s)$ as zero; its real and fake losses are recorded separately. The generator minimises
-\begin{equation}
-\mathcal{L}_G=\mathcal{L}_{adv}+\lambda_{L1}\,\mathcal{L}_{L1}\bigl(y,G(x,s)\bigr),
-\end{equation}
-the adversarial term being the discriminator's error on generated pairs. Both networks use Adam ($\beta_1=0.5$, $\beta_2=0.999$). Optuna tuned the generator and discriminator learning rates, batch size, base channel count, dropout, style-embedding size and $\lambda_{L1}$ with 15-epoch trials on all 899 training pairs (three completed, five pruned). The selected configuration (generator learning rate $1.5\times10^{-4}$, discriminator learning rate $8.6\times10^{-4}$, batch 8, 64 base channels, dropout 0.30, embedding size 32, $\lambda_{L1}=121$) was then trained for the full 100 epochs, recording the discriminator real and fake losses, the generator adversarial and L1 losses and the validation L1, SSIM and PSNR separately for every epoch (Fig.~\ref{fig:curves4}). Every ten epochs the same eight validation photographs are rendered in all three styles and logged to MLflow (Fig.~\ref{fig:prog}), so the development of the generator can be inspected over time.
+\textbf{Losses and training.} The discriminator uses binary cross-entropy on logits (real pairs one, generated pairs zero; both losses are recorded), and the generator minimises $\mathcal{L}_G=\mathcal{L}_{adv}+\lambda_{L1}\mathcal{L}_{L1}(y,G(x,s))$; both use Adam ($\beta_1=0.5$). Optuna tuned both learning rates, batch size, base channels, dropout, embedding size and $\lambda_{L1}$ with 15-epoch trials (three completed, five pruned). The selected configuration (generator learning rate $1.5\times10^{-4}$, discriminator $8.6\times10^{-4}$, batch 8, 64 base channels, dropout 0.30, embedding 32, $\lambda_{L1}=121$) was trained for 100 epochs, logging discriminator real/fake loss, generator adversarial and L1 loss, and validation L1/SSIM/PSNR per epoch (Fig.~\ref{fig:curves4}). Every ten epochs the same eight validation photographs are rendered in all three styles and logged to MLflow (Fig.~\ref{fig:prog}).
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{curves_task4.pdf}
-\caption{Task 4 training: discriminator and generator losses, and validation SSIM and L1 (fixed validation pairs).}\label{fig:curves4}
+\includegraphics[width=0.7\textwidth]{curves_task4.pdf}
+\caption{Task 4 training: discriminator and generator losses, validation SSIM and L1.}\label{fig:curves4}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{task4_progress.pdf}
-\caption{The same eight validation photographs (top row of each panel) rendered by the generator in styles 1, 2 and 3 after epochs 1, 20 and 100.}\label{fig:prog}
+\includegraphics[width=0.7\textwidth]{task4_progress.pdf}
+\caption{The same eight validation photographs (top row of each panel) rendered in styles 1, 2, 3 after epochs 1, 20 and 100.}\label{fig:prog}
 \end{figure*}
 
-\subsection{Results}
-On the 1,046 official test pairs the selected model reaches L1 \nFourLOne{}, SSIM \nFourSSIM{} and PSNR \nFourPSNR{}\,dB (Table~\ref{tab:task4}, Fig.~\ref{fig:ex4}). The error differs strongly between styles: style~2 has an L1 error of \nFourLOnesTwo{} against \nFourLOnesOne{} for style~1 and \nFourLOnesThree{} for style~3, because its reference sketches use heavy dark strokes which a soft generator cannot match pixel by pixel, while style~1 and style~3 are lighter. The test styles are imbalanced (619, 381 and 46 pairs), so the style-3 figures rest on few samples. Each style is visibly different for the same photograph (Fig.~\ref{fig:styles}): style~2 is darkest and heaviest, style~1 lightest.
+\textbf{Results.} On the 1,046 official test pairs the model reaches L1 \nFourLOne{}, SSIM \nFourSSIM{} and PSNR \nFourPSNR{}\,dB (Table~\ref{tab:task4}, Fig.~\ref{fig:ex4}). Style~2 has the largest error (L1 \nFourLOnesTwo{} against \nFourLOnesOne{} for style~1 and \nFourLOnesThree{} for style~3) because its reference sketches use heavy dark strokes that a soft generator cannot match pixel by pixel; style-3 figures rest on only 46 pairs. The same photograph is rendered visibly differently in each style (Fig.~\ref{fig:styles}): style~2 darkest, style~1 lightest.
 
 \begin{table}[t]
 \centering
-\caption{Task 4 on the official FS2K test set. The last row is a second training recipe (photo-only brightness/contrast jitter and learning-rate decay) that was tried and rejected because it was worse.}\label{tab:task4}
+\caption{Task 4 on the FS2K test set. The last row is a second recipe (photo-only jitter, learning-rate decay) that was tried and rejected.}\label{tab:task4}
 \small
 \adjustbox{max width=\columnwidth}{\input{generated/tab_task4.tex}}
 \end{table}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{task4_examples.png}
-\caption{Test examples: photograph, ground-truth sketch, generated sketch and absolute error (twelve pairs spread over the test set).}\label{fig:ex4}
+\includegraphics[width=0.31\textwidth]{task4_examples_a.png}\hfill
+\includegraphics[width=0.31\textwidth]{task4_examples_b.png}\hfill
+\includegraphics[width=0.31\textwidth]{task4_examples_c.png}
+\caption{Twelve test pairs spread over the test set: photograph, ground-truth sketch, generated sketch and absolute error (left to right in each strip).}\label{fig:ex4}
 \end{figure*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{task4_styles.png}
-\caption{One photograph rendered in the three styles.}\label{fig:styles}
-\end{figure}
+\includegraphics[width=0.27\textwidth]{task4_styles.png}\hfill
+\includegraphics[width=0.27\textwidth]{task4_failures.png}
+\caption{Left: one photograph in the three styles. Right: the four test pairs with the lowest SSIM (0.18--0.21).}\label{fig:styles}
+\end{figure*}
 
-\textbf{Why the sketches are soft.} Compared with the real sketches the generated ones are smoother (Fig.~\ref{fig:ex4}); we measured it. The average gradient magnitude of the generated sketches is only \nSharpShareAll\% of that of the real sketches (Table~\ref{tab:sharp}). A sharper input helps a little and a blurred input hurts a little (Table~\ref{tab:sens}), but the effect is small next to the 63\% gap, so the limit lies in the training rather than in the $128\times128$ input. Two causes are consistent with the evidence. With only 899 training pairs and $\lambda_{L1}=121$ the L1 term dominates and regresses towards an average stroke; and in the selected Optuna trial the discriminator stayed close to chance for the whole 15 epochs (real and fake loss near $\ln 2\approx0.69$), so the adversarial term contributed little; in the 100-epoch run it did learn to separate real from fake (losses fell to about 0.4 and the generator's adversarial loss rose to about 2, Fig.~\ref{fig:curves4}), but the generator's L1 term still dominates the objective. This is the perception--distortion trade-off~\cite{blau2018}: pixel metrics reward smooth outputs. A second recipe (photo-only brightness and contrast jitter, linear learning-rate decay) did not help (SSIM \nFourSSIMv{}, L1 \nFourLOnev{}) and was discarded. Stronger adversarial or perceptual losses, more data, or a higher resolution are the obvious next steps and were not explored.
+\textbf{Why the sketches are soft.} The average gradient magnitude of the generated sketches is only \nSharpShareAll\% of that of the real ones (measured on the test set). A sharper input helps a little and a blurred one hurts a little, but the effect is small next to this gap, so the limit lies in the training and not in the $128\times128$ input. Two causes fit the evidence. With 899 training pairs and $\lambda_{L1}=121$ the L1 term dominates and regresses to an average stroke; and in the selected Optuna trial the discriminator stayed near chance (loss near $\ln 2$), while in the 100-epoch run it did learn to separate real from fake (losses about 0.4, generator adversarial loss about 2) but the L1 term still dominates. This is the perception--distortion trade-off~\cite{blau2018}. A second recipe did not help (SSIM \nFourSSIMv{}, L1 \nFourLOnev{}) and was discarded; stronger adversarial or perceptual losses and more data were not explored.
 
-\begin{table}[t]
-\centering
-\caption{Edge strength (mean gradient magnitude) of real and generated sketches on the FS2K test set.}\label{tab:sharp}
-\small
-\adjustbox{max width=\columnwidth}{\input{generated/tab_sharpness.tex}}
-\end{table}
-
-\begin{table}[t]
-\centering
-\caption{Sensitivity of the generated edge strength to the sharpness of the input photograph.}\label{tab:sens}
-\small
-\adjustbox{max width=\columnwidth}{\input{generated/tab_sensitivity.tex}}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{task4_failures.png}
-\caption{The four test pairs with the lowest SSIM.}\label{fig:fail4}
-\end{figure}
-
-\textbf{Failure cases.} Figure~\ref{fig:fail4} shows the four test pairs with the lowest SSIM (0.18--0.21). Three are style~2 portraits with long hair: the reference sketches draw the hair with dense, dark, hand-drawn strokes, while the generator renders it as a smooth grey mass and draws the face softly (SSIM 0.18, 0.20, 0.20). The fourth is a style~1 portrait with long hair and bangs, where the reference consists of thin, crisp lines and the generated sketch is pale and blurred (0.21). The faces remain recognisable, so these are failures of stroke detail, not of identity. The error maps light up along every reference stroke: a thin line that is missing or displaced by a few pixels costs a large pixel error, which is why pixel metrics punish a soft generator so heavily on hair-rich, style~2 subjects.
+\textbf{Failure cases.} The four lowest-SSIM test pairs (Fig.~\ref{fig:styles}) are portraits with long hair: three in style~2, where the reference draws hair with dense dark strokes and the generator a smooth grey mass (SSIM 0.18--0.20), and one in style~1 with thin crisp reference lines and a pale, blurred output (0.21). The faces remain recognisable, so these are failures of stroke detail, not identity. A thin line missing or shifted by a few pixels costs a large pixel error, which pixel metrics punish heavily on hair-rich style~2 subjects.

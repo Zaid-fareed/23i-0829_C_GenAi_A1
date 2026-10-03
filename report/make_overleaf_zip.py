@@ -1,4 +1,4 @@
-"""Zip the LaTeX project (everything needed to compile on Overleaf) into report/Report_Assignment1_latex.zip.
+"""Zip the LaTeX project (everything needed to compile on Overleaf) into report/i230829_C_Report_latex.zip.
 
   python report/make_overleaf_zip.py
 Upload the zip in Overleaf (New Project -> Upload Project), set main.tex as the main document and compile with pdfLaTeX.
@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "Report_Assignment1_latex.zip"
+OUT = HERE / "i230829_C_Report_latex.zip"
 files = [HERE / "main.tex", HERE / "refs.bib"]
 for folder in ("sections", "generated", "figures"):
     files += [f for f in (HERE / folder).rglob("*") if f.is_file() and f.name != "latency.json"]

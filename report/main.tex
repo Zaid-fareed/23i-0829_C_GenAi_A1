@@ -12,19 +12,21 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 \graphicspath{{figures/}}
+\renewcommand{\topfraction}{0.95}\renewcommand{\dbltopfraction}{0.95}\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.05}\renewcommand{\floatpagefraction}{0.8}\renewcommand{\dblfloatpagefraction}{0.8}
+\setcounter{topnumber}{5}\setcounter{totalnumber}{10}\setcounter{dbltopnumber}{5}
 
 % numbers are generated from the result files by report/build_*.py -- never typed by hand
 \input{generated/numbers.tex}
 \input{generated/numbers_analysis.tex}
 
-\newcommand{\todo}[1]{\textcolor{red}{[#1]}}
 \newcommand{\repo}{\url{https://github.com/Zaid-fareed/23i-0829_C_GenAi_A1}}
 \newcommand{\code}[1]{\texttt{#1}}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125em X}}
 
 \begin{document}
 
-\title{Universal, Hard-Routed and Soft Mixture-of-Experts Image Restoration and Style-Conditioned Face-to-Sketch Synthesis: From Optuna-Tuned Models to a Containerised Web Application}
+\title{Universal, Hard-Routed and Soft Mixture-of-Experts Image Restoration and Style-Conditioned Face-to-Sketch Synthesis}
 
 \author{\IEEEauthorblockN{Zaid Fareed}
 \IEEEauthorblockA{Roll No.\ 23I-0829, Section C --- Generative AI, Assignment~1\\
@@ -34,11 +36,11 @@ Demonstration video: \url{https://youtu.be/xUows4eME8M}}}
 \maketitle
 
 \begin{abstract}
-We design, train, evaluate and deploy four related generative models. The first three restore images corrupted by salt-and-pepper noise, Gaussian blur or rectangular occlusion on the Oxford-IIIT Pet dataset: (1)~one universal denoising autoencoder with a genuine bottleneck, (2)~a hard-routed system in which a corruption classifier selects one of three specialist autoencoders, and (3)~a jointly fine-tuned soft mixture-of-experts whose gate assigns a continuous weight to an identity branch and the three experts. The fourth model is a style-conditioned conditional GAN (U-Net generator, PatchGAN discriminator) that turns FS2K face photographs into sketches in one of three styles. All hyper-parameters were searched with Optuna, all runs are tracked with MLflow, and all inference models are exported to ONNX and verified against PyTorch (maximum difference below $3\times10^{-6}$). Tested on \nNEntries{} deterministic inputs (every test image under all ten conditions), the universal autoencoder raises the mean SSIM of corrupted inputs from \nInputSSIMcorr{} to \nTOneSSIMcorr{}, but reconstructs clean images at only \nTOneSSIMclean{} (an identity mapping would score 1.0), which motivates routing. The corruption classifier is \nClfAcc{} accurate; hard routing reaches an overall SSIM of \nHardPredSSIM{} and the soft mixture \nSoftSSIM{} (universal: \nTOneSSIMall{}) while keeping clean images almost unchanged (\nHardSSIMclean{} and \nSoftSSIMclean{}); the gain comes from clean inputs, and on corrupted inputs the three systems are within about 0.02 SSIM of each other. SSIM and PSNR disagree for occlusion, which we analyse. The cGAN produces recognisable but soft sketches (SSIM \nFourSSIM{} on the official test set). Everything runs from one \code{docker compose up} through a FastAPI + React/Tailwind application whose interface was designed in Google Stitch. We report failure cases and two corrections that our own measurements forced: a first autoencoder that under-fitted, and first specialists that lost more than half of the image colour.
+We build and deploy four generative models. Three restore Oxford-IIIT Pet images corrupted by salt-and-pepper noise, Gaussian blur or occlusion: (1)~a universal bottleneck autoencoder, (2)~a classifier that routes each image to one of three specialist autoencoders, and (3)~a jointly trained soft mixture of experts. The fourth is a style-conditioned cGAN that turns FS2K photographs into sketches in three styles. All hyper-parameters are tuned with Optuna, runs are tracked with MLflow, and the models are exported to ONNX and served by a FastAPI + React application in Docker. On \nNEntries{} test inputs the universal model raises the SSIM of corrupted images from \nInputSSIMcorr{} to \nTOneSSIMcorr{} but reconstructs clean images at only \nTOneSSIMclean{}. The classifier is \nClfAcc{} accurate; hard routing reaches an overall SSIM of \nHardPredSSIM{} and the soft mixture \nSoftSSIM{} (universal: \nTOneSSIMall{}), the gain coming from clean inputs. The cGAN gives recognisable but soft sketches (SSIM \nFourSSIM{}). We report failure cases and two corrections forced by inspecting outputs: an under-fitted first autoencoder and specialists that lost image colour.
 \end{abstract}
 
 \begin{IEEEkeywords}
-denoising autoencoder, mixture of experts, conditional GAN, Optuna, ONNX, FastAPI, image restoration, face sketch synthesis
+denoising autoencoder, mixture of experts, conditional GAN, Optuna, ONNX, image restoration, face sketch synthesis
 \end{IEEEkeywords}
 
 \input{sections/intro}
@@ -54,7 +56,6 @@ denoising autoencoder, mixture of experts, conditional GAN, Optuna, ONNX, FastAP
 
 \appendices
 \input{sections/appendix_ai}
-\input{sections/appendix_repro}
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
